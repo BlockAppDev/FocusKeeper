@@ -1,0 +1,1 @@
+The system shall provide the user with a time log that shows the amount of time spent on each website.The system shall be compatible with both Windows and Mac.The system shall allow the user’s information to be stored for the next time the user launches the application.
