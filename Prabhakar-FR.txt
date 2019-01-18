@@ -1,0 +1,9 @@
+The system shall block and allow access to a preselected list 
+of distracting websites when a button is toggled between focus 
+and relax modes
+
+The system shall keep track of the duration of all applications 
+and websites used in the last 7 days
+
+The system shall block and allow notifications to appear on the 
+screen when a button is toggled between focus and relax modes
