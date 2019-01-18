@@ -1,0 +1,12 @@
+1.	As a parent who works from home,
+I want to set a work mode that blocks my personal messages,
+So that I can prevent distractions when I am supposed to be accomplishing work.
+
+2.	As a college student,
+I want to turn on a focus mode to block my choice of social media sites for a specified period of time,
+So that I can focus when writing papers in large chunks of times.
+
+3.	As a lecturer,
+I want to set a work mode that blocks my choice of websites and notifications,
+So that I do not have notifications pop up when displaying my screen in front of my class.
+ 
