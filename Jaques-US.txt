@@ -1,0 +1,11 @@
+As a mother,
+I want to block gaming and social media sites from my child's computer during study hours,
+so that I can be sure they aren't messing around.
+
+As a user,
+I want to be able to see how long I've used certain websites in a day,
+so that I can try to avoid going on for too long.
+
+As a parent,
+I want to perpetually block inappropriate sites,
+so that my children cannot access them.

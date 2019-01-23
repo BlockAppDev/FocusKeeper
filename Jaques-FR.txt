@@ -1,0 +1,8 @@
+keywords:
+dormant - when a computer is asleep or shut down.
+
+The system shall have the option for the settings to be password protected.
+
+The system shall be shut off when the computer is dormant*.
+
+The system shall provide the option to repeat blockage times daily.
