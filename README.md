@@ -5,3 +5,4 @@ Daniel Dohnalek
 Katie Buck
 Roshan Prabhakar
 Pranathi Guntupalli
+Sydney Jaques
