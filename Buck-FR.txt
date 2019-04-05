@@ -1,3 +1,0 @@
-1.	The system shall display selection boxes for the user to click on.
-2.	The system shall provide a clear selections box for the user to click on.
-3.	The system shall allow access to selected applications once the user specified duration is complete.

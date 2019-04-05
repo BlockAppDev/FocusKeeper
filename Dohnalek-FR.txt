@@ -1,5 +1,0 @@
-The system shall provide a way to prevent a user-specified list of websites from being loaded
-
-The system shall provide a set of pre-defined websites that are blocked by default
-
-The system shall provide a way to activate website blocking in two or fewer clicks
