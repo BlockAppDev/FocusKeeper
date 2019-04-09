@@ -1,0 +1,15 @@
+<div id="demo"></div>
+<br>
+<div id="dyn"></div>
+
+<script>
+    var counter = 0;
+    document.getElementById("demo").innerHTML = "This field was populated by JS";
+
+    window.setInterval(function() {
+        document.getElementById("dyn").innerHTML = counter;
+        counter++;
+    }, 0)
+</script>
+
+<button style="color: blue;">An HTML Button That You Know and Love</button>
