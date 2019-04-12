@@ -8,7 +8,8 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
-public class Main extends Application {
+public class FocusKeeper extends Application {
+	Server server;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -20,11 +21,22 @@ public class Main extends Application {
         WebView view = (WebView)root.lookup("#main_view");
 
         final WebEngine webEngine = view.getEngine();
-        webEngine.load("http://localhost:8000/index.html");
+        webEngine.load(Server.getAddr() + "/static/index.html");
     }
 
-
     public static void main(String[] args) {
+    	FocusKeeper focuskeeper = new FocusKeeper();
+    	focuskeeper.server = new Server();
+    	try {
+    		focuskeeper.server.run();
+    	} catch(Exception e) {
+    		System.out.println(e);
+    		return;
+    	}
+    	
+    	// Launch GUI
         launch(args);
+        
+        focuskeeper.server.stop();
     }
 }
