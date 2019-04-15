@@ -37,9 +37,6 @@ public class FocusKeeper extends Application {
             return;
         }
 
-        focuskeeper.blockController.addBlockItem("youtube.com");
-        focuskeeper.blockController.addBlockItem("www.youtube.com");
-
         // Launch GUI
         launch(args);
 
