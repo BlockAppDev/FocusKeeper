@@ -25,19 +25,19 @@ public class Server {
 
         options("/*", (request, response) -> "ok");
 
-        path("/data", () -> {
+        path("/data", () ->
             put("", (request, response) -> {
                 response.header("Content-Type", "application/json");
                 return "{'message': 'success'}";
-            });
-        });
+            })
+        );
 
-        path("/stats", () -> {
+        path("/stats", () ->
             get("", (request, response) -> {
                 response.header("Content-Type", "application/json");
                 return "{'focus_time': 4566, 'distracted_time': 6345}";
-            });
-        });
+            })
+        );
     }
 
     public void stopServer() {

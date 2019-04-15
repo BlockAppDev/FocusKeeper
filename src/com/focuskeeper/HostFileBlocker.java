@@ -11,7 +11,7 @@ import java.util.List;
 
 public class HostFileBlocker implements BlockController<String> {
     private static String lf = FocusKeeper.os == OS.WINDOWS ? "\r\n" : "\n";
-    private String ERR_MSG = "Couldn't read/write to hosts file";
+    private final String ERR_MSG = "Couldn't read/write to hosts file";
     private HashSet<String> blockedHosts = new HashSet<>();
 
     public HostFileBlocker() {
@@ -63,20 +63,10 @@ public class HostFileBlocker implements BlockController<String> {
     public void addBlockItem(String hostname) {
         blockedHosts.add(hostname);
 
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(getHostsFileLocation(), true);
+        try (FileWriter writer = new FileWriter(getHostsFileLocation(), true)) {
             writer.write(lf + formatBlockEntry(hostname));
         } catch (IOException e) {
             FocusKeeper.logger.error(ERR_MSG, e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    // Don't need to catch problems with close
-                }
-            }
         }
     }
 
@@ -84,23 +74,13 @@ public class HostFileBlocker implements BlockController<String> {
     public void addBlockItems(List<String> hostnames) {
         blockedHosts.addAll(hostnames);
 
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(getHostsFileLocation(), true);
+        try (FileWriter writer = new FileWriter(getHostsFileLocation(), true)) {
             writer.write(lf);
             for (String hostname : hostnames) {
                 writer.write(formatBlockEntry(hostname));
             }
         } catch (IOException e) {
             FocusKeeper.logger.error(ERR_MSG, e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    // Don't need to catch problems with close
-                }
-            }
         }
     }
 
