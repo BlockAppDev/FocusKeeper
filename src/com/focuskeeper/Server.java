@@ -1,71 +1,48 @@
 package com.focuskeeper;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.ExecutorService;
+import static spark.Spark.*;
 
-import fi.iki.elonen.NanoHTTPD;
-import fi.iki.elonen.NanoHTTPD.ClientHandler;
-import fi.iki.elonen.NanoHTTPD.Response.Status;
+import spark.Filter;
 
-public class Server extends NanoHTTPD {
-	static final int PORT = 8000;
-	
-	public Server() {
-		super(PORT);
-		this.setAsyncRunner(new SingleThreadRunner());
-	}
-	
-	public static String getAddr() {
-		return "http://localhost:" + PORT;
-	}
-	
-	public void run() throws IOException {
-		start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
-	}
-	
-	public Response serveFile(IHTTPSession session) {
-		String filePath = session.getUri().replace("/static", "");
-		filePath = filePath.replace("..", "");
-		filePath = filePath.replace("//", "");
-		filePath = "static" + filePath;
+public class Server {
+    static final int PORT = 8000;
+    static final int maxThreads = 3;
+    static final int timeoutMS = 3000;
 
-		String mimeType = getMimeTypeForFile(filePath);
-		InputStream stream;
-		try {
-			stream = new FileInputStream(filePath);
-		} catch(Exception e) {
-			return newFixedLengthResponse(Status.NOT_FOUND, "text/html", "Not found");
-		}
-		long fileSize = new File(filePath).length();
+    public static String getAddr() {
+        return "http://localhost:" + PORT;
+    }
 
-		return newFixedLengthResponse(Status.OK, mimeType, stream, fileSize);
-	}
-	
-	@Override
-	public Response serve(IHTTPSession session) {
-		String uri = session.getUri();
-		if(uri.startsWith("/static")) {
-			return serveFile(session);
-		}
-		
-		return newFixedLengthResponse(Status.NOT_FOUND, "text/html", "Not found");
-	}
-}
+    public void run() {
+        threadPool(maxThreads + 1, maxThreads, timeoutMS);
+        port(PORT);
+        staticFiles.externalLocation("static");
 
-class SingleThreadRunner implements NanoHTTPD.AsyncRunner {
-	@Override
-	public void closeAll() {
-	}
+        after((Filter) (request, response) -> {
+            response.header("Access-Control-Allow-Origin", "*");
+            response.header("Access-Control-Allow-Methods", "*");
+        });
 
-	@Override
-	public void closed(ClientHandler clientHandler) {
-	}
+        options("/*", (request, response) -> {
+            return "ok";
+        });
 
-	@Override
-	public void exec(ClientHandler clientHandler) {
-		clientHandler.run();
-	}
+        path("/data", () -> {
+            put("", (request, response) -> {
+                response.header("Content-Type", "application/json");
+                return "{'message': 'success'}";
+            });
+        });
+
+        path("/stats", () -> {
+            get("", (request, response) -> {
+                response.header("Content-Type", "application/json");
+                return "{'focus_time': 4566, 'distracted_time': 6345}";
+            });
+        });
+    }
+
+    public void stopServer() {
+        stop();
+    }
 }
