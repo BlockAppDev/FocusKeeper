@@ -6,15 +6,15 @@ import spark.Filter;
 
 public class Server {
     static final int PORT = 8000;
-    static final int maxThreads = 3;
-    static final int timeoutMS = 3000;
+    static final int MAX_THREADS = 3;
+    static final int TIMEOUT = 3000;
 
     public static String getAddr() {
         return "http://localhost:" + PORT;
     }
 
     public void run() {
-        threadPool(maxThreads + 1, maxThreads, timeoutMS);
+        threadPool(MAX_THREADS + 1, MAX_THREADS, TIMEOUT);
         port(PORT);
         staticFiles.externalLocation("static");
 
@@ -23,9 +23,7 @@ public class Server {
             response.header("Access-Control-Allow-Methods", "*");
         });
 
-        options("/*", (request, response) -> {
-            return "ok";
-        });
+        options("/*", (request, response) -> "ok");
 
         path("/data", () -> {
             put("", (request, response) -> {

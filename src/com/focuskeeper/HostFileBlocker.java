@@ -11,6 +11,7 @@ import java.util.List;
 
 public class HostFileBlocker implements BlockController<String> {
     private static String lf = FocusKeeper.os == OS.WINDOWS ? "\r\n" : "\n";
+    private String ERR_MSG = "Couldn't read/write to hosts file";
     private HashSet<String> blockedHosts = new HashSet<>();
 
     public HostFileBlocker() {
@@ -26,8 +27,7 @@ public class HostFileBlocker implements BlockController<String> {
             try {
                 Files.copy(backup.toPath(), hosts.toPath(), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Couldn't read/write to hosts file");
+                FocusKeeper.logger.error(ERR_MSG, e);
                 return;
             }
         }
@@ -36,8 +36,7 @@ public class HostFileBlocker implements BlockController<String> {
         try {
             Files.copy(hosts.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Couldn't read/write to hosts file");
+            FocusKeeper.logger.error(ERR_MSG, e);
         }
     }
 
@@ -64,14 +63,20 @@ public class HostFileBlocker implements BlockController<String> {
     public void addBlockItem(String hostname) {
         blockedHosts.add(hostname);
 
+        FileWriter writer = null;
         try {
-            FileWriter writer = new FileWriter(getHostsFileLocation(), true);
-            writer.write(lf);
-            writer.write(formatBlockEntry(hostname));
-            writer.close();
+            writer = new FileWriter(getHostsFileLocation(), true);
+            writer.write(lf + formatBlockEntry(hostname));
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Couldn't read/write to hosts file");
+            FocusKeeper.logger.error(ERR_MSG, e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    // Don't need to catch problems with close
+                }
+            }
         }
     }
 
@@ -79,22 +84,29 @@ public class HostFileBlocker implements BlockController<String> {
     public void addBlockItems(List<String> hostnames) {
         blockedHosts.addAll(hostnames);
 
+        FileWriter writer = null;
         try {
-            FileWriter writer = new FileWriter(getHostsFileLocation(), true);
+            writer = new FileWriter(getHostsFileLocation(), true);
             writer.write(lf);
             for (String hostname : hostnames) {
                 writer.write(formatBlockEntry(hostname));
             }
-            writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Couldn't read/write to hosts file");
+            FocusKeeper.logger.error(ERR_MSG, e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    // Don't need to catch problems with close
+                }
+            }
         }
     }
 
     @Override
     public List<String> getBlockItems() {
-        ArrayList<String> items = new ArrayList<String>();
+        ArrayList<String> items = new ArrayList<>();
         items.addAll(blockedHosts);
         return items;
     }

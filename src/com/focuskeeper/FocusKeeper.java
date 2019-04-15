@@ -1,5 +1,8 @@
 package com.focuskeeper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -10,6 +13,7 @@ import javafx.stage.Stage;
 
 public class FocusKeeper extends Application {
     Server server;
+    static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     BlockController<String> blockController;
     static OS os = Util.getPlatform();
 
@@ -33,7 +37,7 @@ public class FocusKeeper extends Application {
         try {
             focuskeeper.server.run();
         } catch (Exception e) {
-            System.out.println(e);
+            FocusKeeper.logger.error("Server start error", e);
             return;
         }
 
