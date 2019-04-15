@@ -11,7 +11,7 @@ import java.util.List;
 
 public class HostFileBlocker implements BlockController<String> {
     private static String lf = FocusKeeper.os == OS.WINDOWS ? "\r\n" : "\n";
-    private final String ERR_MSG = "Couldn't read/write to hosts file";
+    private static final String ERR_MSG = "Couldn't read/write to hosts file";
     private HashSet<String> blockedHosts = new HashSet<>();
 
     public HostFileBlocker() {

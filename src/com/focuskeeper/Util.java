@@ -1,6 +1,10 @@
 package com.focuskeeper;
 
 public class Util {
+    private Util() {
+        
+    }
+    
     public static OS getPlatform() {
         String name = System.getProperty("os.name").toLowerCase();
         if (name.startsWith("windows")) {
