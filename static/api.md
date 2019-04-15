@@ -23,6 +23,8 @@ $.ajax({
 ### Endpoint: `/stats`
 
 ### Method `GET`
+`GET` can be used to determine the number of seconds that the user has spent on both distracting and focused sites during the current calendar day.<br>
+Example:
 ```javascript
 $.ajax({
     url: "http://localhost:8000/stats",
