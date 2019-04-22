@@ -35,7 +35,8 @@ html {
  * Remove default margin.
  */
 body {
-  margin: 0; }
+  margin: 0; 
+}
 
 /* HTML5 display definitions
    ========================================================================== */
@@ -184,7 +185,7 @@ html {
 
 body {
   color: #404040;
-  background: white;
+  background-color: #FDFFFC;
   font-size: 1rem; }
 
 p,
@@ -223,7 +224,8 @@ h3:not(:first-child) {
   margin-top: 2rem; }
 
 h1 {
-  font-size: 1.75rem; }
+  font-size: 1.75rem; 
+  color: #1C5D99;}
 
 h2 {
   font-size: 1.5rem; }
@@ -661,6 +663,8 @@ caption {
   .contain-table {
     width: 100%; } }
 
+
+ 
 /* Navigation
   =============== */
 /* Layout
