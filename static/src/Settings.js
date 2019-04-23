@@ -1,7 +1,5 @@
 import React, { Component, Fragment } from 'react';
 
-
-
 class Settings extends Component {
 
   handleOnClick = () => {

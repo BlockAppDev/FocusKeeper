@@ -1,12 +1,16 @@
 import React, { Component } from 'react';
+import { BrowserRouter, Route, Switch, withRouter} from 'react';
 import "./home.css";
 import "@fortawesome/fontawesome-free/css/all.css"
 
 class Home extends Component {
+  constuctor() {
+    this.routeChange = this.routeChange.bind(this);
+  }
+
 	handleOnClick = () => {
-		console.log(this.props);
-		const { history } = this.props;
-		history.push('/menu');
+    let path = '/NewBlockList';
+    this.props.history.push(path);
   }
 
   render() {
@@ -24,7 +28,7 @@ class Home extends Component {
         <div id="home-header">
           <input type="checkbox" id="focus-box"></input>
           <span id="focus-mode-text">Focus Mode</span>
-          <i className="fas fa-cog icon" id="settings-cog"></i>
+          <i className="fas fa-cog icon" id="settings-cog" onClick={this.handleOnClick}></i>
           <hr></hr>
         </div>
         <div id="icon-holder">
