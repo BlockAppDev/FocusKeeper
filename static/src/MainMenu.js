@@ -30,7 +30,7 @@ class MainMenu extends Component {
 	  handleOnClick = () => {
 		console.log(this.props);
 		const { history } = this.props;
-		history.push('/settings');
+		history.push('/NewBlockList');
 	}
 
   	render() {

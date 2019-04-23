@@ -35,7 +35,7 @@ html {
  * Remove default margin.
  */
 body {
-  margin: 0; 
+  margin: 2em; 
 }
 
 /* HTML5 display definitions
@@ -173,7 +173,7 @@ html {
   box-sizing: inherit; }
 
 figure {
-  margin: 0; }
+  margin: 2em; }
 
 /* Scaffolding
   =============== */
@@ -186,7 +186,8 @@ html {
 body {
   color: #404040;
   background-color: #FDFFFC;
-  font-size: 1rem; }
+  font-size: 1rem; 
+  margin: 2em;}
 
 p,
 ol,
@@ -238,6 +239,10 @@ h4 {
 
 h5 {
   font-size: 1rem; }
+
+
+h6 {
+  font-size: 0.5rem; }
 
 @media (min-width: 600px) {
   h1:not(:first-child),
