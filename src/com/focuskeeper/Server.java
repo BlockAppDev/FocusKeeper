@@ -16,7 +16,7 @@ public class Server {
     public void run() {
         threadPool(MAX_THREADS + 1, MAX_THREADS, TIMEOUT);
         port(PORT);
-        staticFiles.externalLocation("static");
+        staticFiles.externalLocation("static/build");
 
         after((Filter) (request, response) -> {
             response.header("Access-Control-Allow-Origin", "*");

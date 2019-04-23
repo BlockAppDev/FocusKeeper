@@ -1,0 +1,87 @@
+#home {
+    width: 350px;
+    height: 450px;
+    background-color: white;
+}
+
+#focus-box {
+    display: inline-block;
+    transform: scale(1.5);
+    margin: 20px 20px 5px 20px;
+}
+
+#focus-mode-text {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+#icon-holder {
+    float: right;
+    margin-right: 11px;
+}
+
+.icon {
+    display: block !important;
+    font-size: 1.7em;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+.icon:hover {
+    color: #4A90E2;
+}
+
+#settings-cog {
+    float: right;
+    margin-top: 12px;
+    margin-right: 13px;
+    font-size: 1.7em;
+}
+
+#date-selector {
+    float: left;
+    margin-top: -10px;
+    margin-left: 10px;
+    width: 80%;
+    display: table;
+    table-layout: fixed;
+}
+
+#date-selector span {
+    display: table-cell;
+    text-align: center;
+}
+
+#data-vis * {
+    margin: auto;
+    left: 0;
+    right: 0;
+}
+
+#recently-used-text {
+    margin-left: 15px;
+    font-weight: bold;
+}
+
+#pie-chart-container {
+    margin: auto;
+    text-align: center;
+}
+
+.recent-items {
+    display: block;
+    margin-left: 15px;
+}
+
+.recent-items i {
+    font-size: 0.7em;
+}
+
+.recent-items span {
+    margin-left: 5px;
+}
+
+.recent-items-time {
+    margin-right: 15px;
+    float: right;
+}
