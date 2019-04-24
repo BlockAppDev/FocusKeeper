@@ -1,4 +1,8 @@
 package com.focuskeeper;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -11,8 +15,8 @@ import java.util.ArrayList;
 
 public class DatabaseController {
 	private static Connection con;
-	private static int numColumnsURLSettings;
-	private static ArrayList<String> colNamesURLSettings;
+//	private static int numColumnsURLSettings;
+//	private static ArrayList<String> colNamesURLSettings;
 	private static boolean hasTables;
 	
 	//Functions:
@@ -28,17 +32,22 @@ public class DatabaseController {
 	
 	
 	public static void main(String[] args) throws SQLException, ClassNotFoundException {
-		System.out.println("Running.");	
+		System.out.println("Running...\n");	
 		if(con==null) getConnection();
 		
 		createTable();
+		//always need to call getDatabaseMetaData(); it saves data to our global variables
 		getDatabaseMetaData();
-		
 		//testing addList feature
-		deleteList("School");
-//		String[] URLs = {"www.facebook.com", "www.instagram.com"};
-//		addList("School", URLs);
+//		restartDB();
+		
+		String[] URLS = {"www.facebook.com", "www.myportal.com"};
+		addList("Work", URLS);
+		
+		addURLUsage(12, "www.facebook.com");
 		getDatabaseMetaData();
+
+		
 	}
 	
 	private static void getConnection() throws ClassNotFoundException, SQLException {
@@ -59,61 +68,61 @@ public class DatabaseController {
 	            while(rs.next())
 	            	tableNames.add(rs.getString("TABLE_NAME"));
 	            
-	            //print URLSettings 
+	            //print BlockLists
 	            System.out.println(tableNames.get(0));
-	            ResultSet res = stmt.executeQuery("SELECT * FROM URLSettings");
-	            ResultSetMetaData rsmd = res.getMetaData();
-	            int columnCount = rsmd.getColumnCount();
-	            numColumnsURLSettings = columnCount;
-
-	            //print column names
-	            ArrayList<String> columns = new ArrayList<>();
-	            for (int i = 1; i <= columnCount; i++ ) {
-	              String name = rsmd.getColumnName(i);
-	              System.out.printf(name + "    ");
-	              columns.add(name);
-	            }
-	            System.out.println();
-	            colNamesURLSettings = columns;
+	            ResultSet res = stmt.executeQuery("SELECT * FROM BlockLists");
 	            //print column values
+	            System.out.println("BlockID     BlockName");
 	            while (res.next()) {
-		               for(String col : columns) {
-		            	   String colVal = res.getString(col);
-			               System.out.print(colVal + "           ");
-		               }
-		               System.out.println();
+	            	int BlockID = res.getInt("BlockID");
+	            	String BlockName = res.getString("BlockName");
+	            	System.out.println(BlockID + "          " + BlockName);
 		            }
+	            
 	            System.out.println("\n");
 
 	            //print URLs Table
 	            System.out.println(tableNames.get(1));
-	            rs = stmt.executeQuery("SELECT * FROM URLs");
+	            rs = stmt.executeQuery("SELECT * FROM URLSettings");
 	            
-	            //permanent column names - no need to grab from table
-	            System.out.println("ID    URL");
+	            //permanent column names
+	            System.out.println("ID    BlockId");
 	            
 	            //print column values
 	            while (rs.next()) {
-	               int id = rs.getInt("id");
-	               String URL = rs.getString("URL");
-	               System.out.println(id+"   "+URL);
+	               int id = rs.getInt("ID");
+	               int blockID = rs.getInt("BlockID");
+	               System.out.println(id+"        "+ blockID);
 	            }
-	            System.out.println();
+	            System.out.println("\n");
 	            
 	            
 	            //print WebsiteUsage Table
 	            System.out.println(tableNames.get(2));
-	            rs = stmt.executeQuery("SELECT * FROM WebsiteUsage");
+	            rs = stmt.executeQuery("SELECT * FROM URLs");
 	            
 	            //permanent column names - no need to grab from table
-	            System.out.println("ID    ElapsedTime    Date");
+	            System.out.println("ID      URL");
 	            
+	            while(rs.next()) {
+	            	int id = rs.getInt("ID");
+	            	String URL = rs.getString("URL");
+	            	System.out.println(id + "    " + URL);
+	            }
+	            System.out.println("\n");
+	            
+
+	            System.out.println(tableNames.get(3));
+	            rs = stmt.executeQuery("SELECT * FROM WebsiteUsage");
+	            
+	            //permanenet column names
+	            System.out.println("ID     Date     Time");
 	            //print column values
 	            while(rs.next()) {
 	            	int id = rs.getInt("id");
 	            	int time = rs.getInt("elapsedTime");
-	            	int date = rs.getInt("date");
-	            	System.out.println(id + "   " + time + "    " + date + "    ");
+	            	String date = rs.getString("Date");
+	            	System.out.println(id + "      " + time + "        " + date + "      ");
 	            	
 	            }
 	            System.out.println();
@@ -123,7 +132,8 @@ public class DatabaseController {
 	         }
 
 	    }
-	
+	//creates our three tables: URLs, URLSettings, WebsiteUsage
+	//can be called if they are already created
 	public static void createTable() throws SQLException, ClassNotFoundException {
 		//creating the tables in the database:
 			//URLS
@@ -136,10 +146,16 @@ public class DatabaseController {
 					+ " URL text NOT NULL);";
 			state.executeUpdate(createURLS);	
 			
+			String createBlockList = "CREATE TABLE IF NOT EXISTS BlockLists (\n"
+					+ " BlockID INTEGER PRIMARY KEY AUTOINCREMENT, \n"
+					+ " BlockName text NOT NULL UNIQUE);";
+			state.executeUpdate(createBlockList);
+					
+			
 			String createUsage = "CREATE TABLE IF NOT EXISTS WebsiteUsage (\n"
 					+ " ID INTEGER NOT NULL, \n"
 					+ " elapsedTime int DEFAULT 0, \n"
-					+ " Date date NOT NULL, \n"
+					+ " Date text NOT NULL, \n"
 					+ " CONSTRAINT UQ_WebsiteUsage UNIQUE(ID, DATE));";   
 												 //store time as integer of minutes on the site. 
 												 //if user goes on site multiple times in one day,
@@ -149,14 +165,16 @@ public class DatabaseController {
 			
 			
 			String createSettings = "CREATE TABLE IF NOT EXISTS URLSettings (\n"
-					+ " ID INTEGER NOT NULL UNIQUE, \n"
-					+ " Distracting boolean DEFAULT FALSE);";
+					+ " ID INTEGER NOT NULL, \n"
+					+ " BlockID INTEGER NOT NULL, \n"
+					+ " CONSTRAINT UQ_URLSettings UNIQUE(ID, BLOCKID));";
 			
 			state.executeUpdate(createSettings);
 			hasTables = true;
 		}
 	}
 	
+	//deletes all tables and wipes all database 
 	public static void restartDB() throws ClassNotFoundException, SQLException {
 		if(con == null) getConnection();
 		
@@ -169,6 +187,9 @@ public class DatabaseController {
 
 		sql = "DROP TABLE WebsiteUsage;";
 		state.executeUpdate(sql);
+		
+		sql = "DROP TABLE BlockLists;";
+		state.executeUpdate(sql);
 	}
 	
 	//When user adds a new block list with URLS
@@ -177,12 +198,13 @@ public class DatabaseController {
 		//adds new list as field in URLSettings database
 		try {
 			Statement state = con.createStatement();
-			String addNew = "ALTER TABLE URLSettings ADD " + list + " boolean;";
+			String addNew = "INSERT INTO BlockLists (BlockID, BlockName)\n"
+					+ " VALUES(null,'" + list + "');";
 			state.executeUpdate(addNew);
 
 		} catch (SQLException e) {
 			//this exception is caught if the list already exists.
-			System.out.println("List " + list + " already exists. Carry on.\n");
+			System.out.println(list + " already exists in BlockLists. Carry on.\n");
 		}
 
 		//adds new URLS to URLs database
@@ -205,64 +227,38 @@ public class DatabaseController {
 		try {
 			Statement state3 = con.createStatement();
 			//inserting all default values as false
-			String colNames = "id";
-			String insertFalse = "false";
-            for(int i = 1; i < numColumnsURLSettings; i++) {
-            	colNames += ", " + colNamesURLSettings.get(i);
-            	if(i+1 != numColumnsURLSettings) {
-            		insertFalse += ", false";
-            	}
-            }
             	
-            //inserting the URL ID into URLSettings with all false values
-            //ignores this command if URL already exists in database
+            //inserting the URL ID and BlockListName ID into URLSettings
+            //ignores this command if URL already exists in database with blockListID
             for(String URL : URLS) {
-            	String insert = "INSERT or IGNORE INTO URLSettings (" + colNames + ")\n"
-            			+ " VALUES((SELECT ID from URLs where URL='" + URL + "'), " + insertFalse + ");";
+            	String insert = "INSERT or IGNORE INTO URLSettings (ID, BlockID)\n"
+            			+ " VALUES((SELECT ID from URLs where URL='" + URL + "'), (SELECT BlockID from BlockLists"
+            					+ " where BlockName='" + list + "'));";
             	state3.executeUpdate(insert);
-                //then adding the true booleans 
-            	String update = "UPDATE URLSettings SET "
-            			+ list + " =true WHERE ID=(SELECT ID from URLs where URL='" + URL + "');";
-            	state3.executeUpdate(update);
             }
 		} catch (SQLException e){
 			System.out.println(e);
 		}
-		//sets boolean values to true if URL in that block list
 	}
 	
 	
 	//When user wants to delete block list
 	//Parameters: Name of the list to be deleted
 	public static void deleteList(String list) {
-		//deletes list as column from URLSettings database
-		//SQLite doesn't support DROP COLUMN so we set all URLs to false under that column
-		//another option is we could delete all tables and start over by saving list of urls and their lists
-		try {
-			Statement state = con.createStatement();
-			String dropList = "UPDATE URLSettings SET " + list + "=false;";
-			state.executeUpdate(dropList);
-
-		} catch (SQLException e) {
-			//this exception is caught if the list already exists.
-			System.out.println("\nError droping list '" + list + "'\n");
-			System.out.println(e);
-		}
-		
+		//deletes entry in URLSettings where URL is attached to list being dropped
 		//deletes URLS in URLs database where they only existed in deleted list
-		//deletes Entry in URLsettings where only list belonged to was deleted list
 		try {
 			Statement state2 = con.createStatement();
-			String delete = "DELETE FROM URLSettings WHERE " + colNamesURLSettings.get(1) + "=false";
-			for(int i = 2; i < numColumnsURLSettings; i++) {
-				
-				delete += " AND " + colNamesURLSettings.get(i) + "=false";
-			}
-			delete+=";";
+			String delete = "DELETE FROM URLSettings WHERE BlockID= (SELECT BlockID FROM BlockLists WHERE BlockName='"
+					+ list + "');";
 			state2.executeUpdate(delete);
 			
 			String delete2 = "DELETE FROM URLs WHERE ID NOT IN (SELECT US.ID FROM URLSettings US);";
 			state2.executeUpdate(delete2);
+			
+			String delete3 = "DELETE FROM BlockLists WHERE BlockName='" + list + "';";
+			state2.executeUpdate(delete3);
+			
 		} catch (SQLException e) {
 			System.out.println(e);
 		}
@@ -275,12 +271,83 @@ public class DatabaseController {
 	public static void addURLUsage(Integer elapsedTime, String URL) {
 		//adds current elapsed time to current value in URLUsage database
 		//adds new entry if first visit in day
+		int currentTime;
+		int ID;
+		boolean New = false;
+		LocalDate localDate = LocalDate.now();
+        String date = DateTimeFormatter.ofPattern("yyy/MM/dd").format(localDate);
+        
+		try {
+			Statement state = con.createStatement();
+			String getUsage = "SELECT * FROM WebsiteUsage WHERE"
+				+ " EXISTS (SELECT 1 FROM WebsiteUsage WHERE ID = (SELECT ID FROM URLs WHERE URL = '" + URL + "')) AND"
+						+ " Date = '" + date + "';";
+			ResultSet usage = state.executeQuery(getUsage);
+			try {
+				ID = usage.getInt("ID");
+				currentTime = usage.getInt("elapsedTime");
+			} catch (SQLException e) {   //means the entry is not there. Add it.
+				String getID = "SELECT * FROM URLs WHERE URL = '" + URL + "';";
+				usage = state.executeQuery(getID);
+				ID = usage.getInt("ID");
+				currentTime = 0;
+				New = true;
+			}
+			currentTime += elapsedTime;
+			if(New) {  //to add new entry
+				String add = "INSERT INTO WebsiteUsage (ID, elapsedTime, Date)\n"
+						+ " VALUES(" + ID + ", " + currentTime + ", '" + date + "');";
+				state.executeUpdate(add);
+			} else {
+				String insert = "UPDATE WebsiteUsage SET ID= " + ID + ", elapsedTime = "
+						 + currentTime + ", Date = '" + date + "' WHERE"
+						 		+ " ID = " + ID + " AND Date = '" + date + "';";
+				state.executeUpdate(insert);
+			}
+						
+		} catch (SQLException e) {
+			System.out.println(e);
+		}	
+	}
+	
+	//To Display top visited sites in week
+	public static void getMostUsed() {
+		//queries to get sites with highest elapsedTime in WebsiteUsage
+		try {
+			Statement state = con.createStatement();
+
+			
+		} catch (SQLException e) {
+			
+		}
+
+		//same as print but add to a dictionary-type thing
 		
 	}
 	
-	//To Display top visited sites 
-	public static void getTopVisited() {
-		//queries to get sites with highest elapsedTime in WebsiteUsage
+
+	//To Display recently used sites in day
+	public static void getRecentlyUsed() {
+		//queries to get sites recently used in WebsiteUsage
+		//same as print but add to a dictionary-type thing
+		try {
+			Statement state = con.createStatement();
+			String getRecent = "SELECT * FROM WebsiteUsage ORDER BY elapsedTime DESC LIMIT 5;";
+			ResultSet usage = state.executeQuery(getRecent);
+			//add to lists to return
+            System.out.println("ID     Date     Time");
+            //print column values
+            while(usage.next()) {
+            	int id = usage.getInt("id");
+            	int time = usage.getInt("elapsedTime");
+            	String date = usage.getString("Date");
+            	System.out.println(id + "      " + time + "        " + date + "      ");
+            }
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 }
