@@ -72,8 +72,8 @@ class NewBlockList extends Component {
                   ))}
                 </tbody>
               </table>
-              <img src = "AddIcon.svg" onClick={this.handleAddRow} className="btn btn-default pull-left"/>
-              <img src = "DeleteIcon.svg" onClick={this.handleRemoveRow} className="pull-right btn btn-default"/>
+              <img src = "plus.svg" onClick={this.handleAddRow} className="btn btn-default pull-left"/>
+              <img src = "minus.svg" onClick={this.handleRemoveRow} className="pull-right btn btn-default"/>
             </div>
           </div>
         </div>
