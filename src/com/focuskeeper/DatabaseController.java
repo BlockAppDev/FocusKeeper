@@ -15,8 +15,6 @@ import java.util.ArrayList;
 
 public class DatabaseController {
 	private static Connection con;
-//	private static int numColumnsURLSettings;
-//	private static ArrayList<String> colNamesURLSettings;
 	private static boolean hasTables;
 	
 	//Functions:
