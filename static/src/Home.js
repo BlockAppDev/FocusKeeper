@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-import { BrowserRouter, Route, Switch, withRouter} from 'react';
 import "./home.css";
 import "@fortawesome/fontawesome-free/css/all.css"
 
 class Home extends Component {
-  constuctor() {
-    this.routeChange = this.routeChange.bind(this);
+  constructor(props) {
+    super(props);
+    this.state = {
+      focused: false
+    }
   }
 
 	handleOnClick = () => {
@@ -25,9 +27,11 @@ class Home extends Component {
 
     return (
       <div id="home">
-        <div id="home-header">
-          <input type="checkbox" id="focus-box"></input>
-          <span id="focus-mode-text">Focus Mode</span>
+        <div id="home-header"
+          onClick={() => this.setState({focused: !this.state.focused})}
+          style={{backgroundColor: this.state.focused ? "#358562": "white"}}>
+          <input type="checkbox" id="focus-box" checked={this.state.focused}></input>
+          <span id="focus-mode-text" style={{color: this.state.focused ? "white" : "black"}}>Focus Mode</span>
           <i className="fas fa-cog icon" id="settings-cog" onClick={this.handleOnClick}></i>
           <hr></hr>
         </div>

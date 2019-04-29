@@ -5,12 +5,15 @@
 }
 
 #focus-box {
+    cursor: pointer;
     display: inline-block;
     transform: scale(1.5);
     margin: 20px 20px 5px 20px;
 }
 
 #focus-mode-text {
+    cursor: pointer;
+    user-select: none;
     font-weight: bold;
     font-size: 1.2em;
 }

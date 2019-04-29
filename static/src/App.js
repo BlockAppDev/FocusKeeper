@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 // import { Form, Text} from 'react-form';
 
-import Home from './Home.js';
+import Home from './home.js';
 import MainMenu from './MainMenu.js';
 import Settings from './Settings.js';
 import NewBlockList from './NewBlockList.js';
