@@ -1,17 +1,16 @@
 package com.focuskeeper;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class DatabaseController {
 	private static Connection con;
@@ -25,8 +24,8 @@ public class DatabaseController {
 		//addList()				 :  adds new URLS and list when new blocklist is created
 		//deleteList()			 :	deletes blocklist and it's URLs (if not used by another list)
 		//addURLUsage()			 :	updates URL Usage time each time user goes on new website
-		//getTopVisited()		 :  gets top 5 most visited sites that day (to display on hope page of application)
-	
+		//getRecentlyUsed()		 :  gets top 5 most visited sites that day (to display on hope page of application)
+		//getTotalTimeToday()	 :  gets total screen time user has spent today 
 	
 	
 	public static void main(String[] args) throws SQLException, ClassNotFoundException {
@@ -37,14 +36,12 @@ public class DatabaseController {
 		//always need to call getDatabaseMetaData(); it saves data to our global variables
 		getDatabaseMetaData();
 		//testing addList feature
+		
 //		restartDB();
 		
-		String[] URLS = {"www.facebook.com", "www.myportal.com"};
-		addList("Work", URLS);
-		
-		addURLUsage(12, "www.facebook.com");
-		getDatabaseMetaData();
 
+		getDatabaseMetaData();
+		getMostUsed("2019/04/28", "2019/04/29");
 		
 	}
 	
@@ -114,7 +111,7 @@ public class DatabaseController {
 	            rs = stmt.executeQuery("SELECT * FROM WebsiteUsage");
 	            
 	            //permanenet column names
-	            System.out.println("ID     Date     Time");
+	            System.out.println("ID     Elapsed     Date");
 	            //print column values
 	            while(rs.next()) {
 	            	int id = rs.getInt("id");
@@ -159,8 +156,11 @@ public class DatabaseController {
 												 //if user goes on site multiple times in one day,
 												 //add elapsed time to current stored value
 			//when adding data: Insert into Event(time,Date) values(time, GETDATE());
-			state.executeUpdate(createUsage);
+			state.executeUpdate(createUsage);	
 			
+			String addNew = "INSERT OR IGNORE INTO BlockLists (BlockID, BlockName)\n"
+					+ " VALUES(null,'Distractions');";
+			state.executeUpdate(addNew);
 			
 			String createSettings = "CREATE TABLE IF NOT EXISTS URLSettings (\n"
 					+ " ID INTEGER NOT NULL, \n"
@@ -199,6 +199,8 @@ public class DatabaseController {
 			String addNew = "INSERT INTO BlockLists (BlockID, BlockName)\n"
 					+ " VALUES(null,'" + list + "');";
 			state.executeUpdate(addNew);
+			
+
 
 		} catch (SQLException e) {
 			//this exception is caught if the list already exists.
@@ -266,86 +268,141 @@ public class DatabaseController {
 	
 	//When user goes on website
 	//Parameters: Time spent on website in current period, name of website
-	public static void addURLUsage(Integer elapsedTime, String URL) {
+	public static void addURLUsage(Integer elapsedTime, String URL) throws SQLException {
 		//adds current elapsed time to current value in URLUsage database
 		//adds new entry if first visit in day
 		int currentTime;
 		int ID;
-		boolean New = false;
 		LocalDate localDate = LocalDate.now();
         String date = DateTimeFormatter.ofPattern("yyy/MM/dd").format(localDate);
         
-		try {
-			Statement state = con.createStatement();
-			String getUsage = "SELECT * FROM WebsiteUsage WHERE"
-				+ " EXISTS (SELECT 1 FROM WebsiteUsage WHERE ID = (SELECT ID FROM URLs WHERE URL = '" + URL + "')) AND"
-						+ " Date = '" + date + "';";
-			ResultSet usage = state.executeQuery(getUsage);
-			try {
-				ID = usage.getInt("ID");
-				currentTime = usage.getInt("elapsedTime");
-			} catch (SQLException e) {   //means the entry is not there. Add it.
-				String getID = "SELECT * FROM URLs WHERE URL = '" + URL + "';";
-				usage = state.executeQuery(getID);
-				ID = usage.getInt("ID");
-				currentTime = 0;
-				New = true;
-			}
-			currentTime += elapsedTime;
-			if(New) {  //to add new entry
-				String add = "INSERT INTO WebsiteUsage (ID, elapsedTime, Date)\n"
-						+ " VALUES(" + ID + ", " + currentTime + ", '" + date + "');";
-				state.executeUpdate(add);
-			} else {
-				String insert = "UPDATE WebsiteUsage SET ID= " + ID + ", elapsedTime = "
-						 + currentTime + ", Date = '" + date + "' WHERE"
-						 		+ " ID = " + ID + " AND Date = '" + date + "';";
-				state.executeUpdate(insert);
-			}
-						
-		} catch (SQLException e) {
-			System.out.println(e);
-		}	
+        Statement state = con.createStatement();
+			
+		String getID = "SELECT * FROM URLs WHERE URL = '" + URL + "';";
+		ResultSet gotID = state.executeQuery(getID);
+		ID = gotID.getInt("ID");
+		
+		
+		String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = " +  ID + " AND"
+					+ " Date = '" + date + "';";
+		ResultSet usage = state.executeQuery(getUsage);
+		if(usage.next()) {
+			currentTime = usage.getInt("elapsedTime");
+		} else currentTime = 0;
+
+		currentTime += elapsedTime;
+		
+		//inserts if can (unique constraint won't let it if already there)
+		String add = "INSERT OR IGNORE INTO WebsiteUsage (ID, elapsedTime, Date)\n"
+					+ " VALUES(" + ID + ", " + currentTime + ", '" + date + "');";
+		state.executeUpdate(add);
+		
+		//updates is done if the insert failed (done anyways but doesn't matter)
+		String insert = "UPDATE WebsiteUsage SET ID= " + ID + ", elapsedTime = "
+					 + currentTime + ", Date = '" + date + "' WHERE"
+					 		+ " ID = " + ID + " AND Date = '" + date + "';";
+		state.executeUpdate(insert);
+							
 	}
 	
-	//To Display top visited sites in week
-	public static void getMostUsed() {
+	//To Display top visited sites in given start and end dates
+	public static HashMap<String, Integer> getMostUsed(String start, String end) throws SQLException {
 		//queries to get sites with highest elapsedTime in WebsiteUsage
-		try {
-			Statement state = con.createStatement();
 
-			
-		} catch (SQLException e) {
-			
-		}
-
-		//same as print but add to a dictionary-type thing
+		LinkedHashMap <String, Integer> mostUsed = new LinkedHashMap<>();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy/MM/dd");
+		String datesForQuery = "(";
+				
+		//convert String to LocalDate
+		LocalDate newStart = LocalDate.parse(start, formatter);
+		LocalDate newEnd = LocalDate.parse(end, formatter);
 		
+        String formattedDate = DateTimeFormatter.ofPattern("yyy/MM/dd").format(newStart);
+        datesForQuery += "'" + formattedDate + "'";
+		if(newStart.isBefore(newEnd)) {
+			newStart = newStart.plusDays(1);
+			for (LocalDate date = newStart; ((date.isBefore(newEnd)) || (date.isEqual(newEnd))); date = date.plusDays(1)) {
+		        formattedDate = DateTimeFormatter.ofPattern("yyy/MM/dd").format(date);
+		        datesForQuery += ", '" + formattedDate + "'";
+			}
+		}
+		datesForQuery += ")";
+		
+		//query for most used
+		Statement state = con.createStatement();
+		String get = "SELECT u.URL AS url, sum(w.elapsedTime) AS elapsed"
+				+ " FROM WebsiteUsage AS w"
+				+ " LEFT JOIN URLs AS u on w.ID = u.ID"
+				+ " WHERE w.Date IN " + datesForQuery 
+				+ " GROUP BY u.URL"
+				+ " ORDER BY elapsed DESC LIMIT 5;";
+		ResultSet rs = state.executeQuery(get);
+		while(rs.next()) {
+			mostUsed.put(rs.getString("url"), rs.getInt("elapsed"));
+		}
+		return mostUsed;
 	}
 	
 
 	//To Display recently used sites in day
-	public static void getRecentlyUsed() {
+	public static HashMap<String, Integer> getRecentlyUsed() throws SQLException {
 		//queries to get sites recently used in WebsiteUsage
 		//same as print but add to a dictionary-type thing
-		try {
-			Statement state = con.createStatement();
-			String getRecent = "SELECT * FROM WebsiteUsage ORDER BY elapsedTime DESC LIMIT 5;";
-			ResultSet usage = state.executeQuery(getRecent);
-			//add to lists to return
-            System.out.println("ID     Date     Time");
-            //print column values
-            while(usage.next()) {
-            	int id = usage.getInt("id");
-            	int time = usage.getInt("elapsedTime");
-            	String date = usage.getString("Date");
-            	System.out.println(id + "      " + time + "        " + date + "      ");
-            }
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		
+		//("www.instagram.com", 45)
+		LinkedHashMap <String, Integer> recents = new LinkedHashMap<>();
+		Statement state = con.createStatement();
+		String getRecent = "SELECT * FROM WebsiteUsage ORDER BY elapsedTime DESC LIMIT 5;";
+		ResultSet usage = state.executeQuery(getRecent);
+		//add to lists to return
+		
+        //save column values
+        while(usage.next()) {
+        	int id = usage.getInt("ID");
+        	int time = usage.getInt("elapsedTime");
+
+        	Statement state2 = con.createStatement();
+        	String getURL = "SELECT * FROM URLs WHERE ID = '" + id + "';";
+        	ResultSet url = state2.executeQuery(getURL);
+        	String foundURL = url.getString("URL");
+        	
+        	recents.put(foundURL, time);
+        }
+        		
+		return recents;
 		
 	}
 	
+	//to Display total screen time today
+	//can be used to display screen time of past week (save values)
+	public static int getTotalTimeToday() throws SQLException {
+		int totalTimeToday = 0;
+		Statement state = con.createStatement();
+		LocalDate localDate = LocalDate.now();
+        String date = DateTimeFormatter.ofPattern("yyy/MM/dd").format(localDate);
+                
+        String get = "SELECT * FROM WebsiteUsage WHERE Date='" + date + "';";
+        ResultSet rs = state.executeQuery(get);
+        while(rs.next()) {
+        	totalTimeToday += rs.getInt("elapsedTime");  	
+        }
+        return totalTimeToday;
+	}
+	
+	//to Display total time spend in focus today
+	//used to display as a % -- use function with getTotalTimeToday()
+	public static int getTotalFocusTimeToday() throws SQLException {
+		int totalTimeToday = 0;
+		Statement state = con.createStatement();
+		LocalDate localDate = LocalDate.now();
+        String date = DateTimeFormatter.ofPattern("yyy/MM/dd").format(localDate);
+        
+        String get = "SELECT * FROM WebsiteUsage WHERE Date = '" + date + "'"
+        		+ " AND ID IN (SELECT ID FROM URLSettings WHERE BlockID = 1);";
+        ResultSet rs = state.executeQuery(get);
+        while(rs.next()) {
+        	totalTimeToday += rs.getInt("elapsedTime");
+        }
+        return totalTimeToday;
+	}	
 }
