@@ -17,7 +17,7 @@ class Home extends Component {
 
   render() {
     let data = [
-      {"seconds": 100 * 300, "focused": true, "name": "VSCode"},
+      {"seconds": 100 * 300 + 120 * 10, "focused": true, "name": "VSCode"},
       {"seconds": 23 * 300, "focused": false, "name": "Netflix"},
       {"seconds": 32 * 300, "focused": true, "name": "Piazza"}
     ];
@@ -32,7 +32,7 @@ class Home extends Component {
           style={{backgroundColor: this.state.focused ? "#358562": "white"}}>
           <input type="checkbox" id="focus-box" checked={this.state.focused}></input>
           <span id="focus-mode-text" style={{color: this.state.focused ? "white" : "black"}}>Focus Mode</span>
-          <i className="fas fa-cog icon" id="settings-cog" onClick={this.handleOnClick}></i>
+          <i className="fas fa-cog icon" id="settings-cog" style={{color: this.state.focused ? "white" : "black"}} onClick={this.handleOnClick}></i>
           <hr></hr>
         </div>
         <div id="icon-holder">
@@ -146,7 +146,14 @@ function getCircle(diam, total, previous, item) {
 
   let degree_width = item.seconds / total * 360;
 
-  return [previous + degree_width, <path d={describeArc(radius, radius, radius - stroke_width, previous, previous + degree_width)} fill="none" strokeWidth={stroke_width} stroke={item.color} key={Math.random()}></path>]
+  let arc = <path d=
+    {describeArc(radius, radius, radius - stroke_width, previous, previous + degree_width)}
+    fill="none"
+    strokeWidth={stroke_width}
+    stroke={item.color}
+    key={Math.random()}></path>
+
+  return [previous + degree_width, arc];
 }
 
 function renderPieChart(height, width, data) {
@@ -168,8 +175,8 @@ function renderPieChart(height, width, data) {
     circles.push(result[1]);
   }
 
-  let start_y = 80;
-  let text_x = width / 2 - 60;
+  let start_y = 85;
+  let text_x = width / 2 - 65;
   return (<div>
     <svg height={height} width={width}>
       {circles}

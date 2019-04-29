@@ -27,7 +27,7 @@ public class FocusKeeper extends Application {
         WebView view = (WebView) root.lookup("#main_view");
 
         final WebEngine webEngine = view.getEngine();
-        webEngine.load(Server.getAddr() + "/index.html");
+        webEngine.load(Server.getAddr());
     }
 
     public static void main(String[] args) {
