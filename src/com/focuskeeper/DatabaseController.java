@@ -77,9 +77,16 @@ public class DatabaseController {
 	
 	//restartDB()			 :  wipe and delete all database tables (cannot be undone)
 	public static void restartDB() {
-		try {
-			if(con == null) getConnection();
-			Statement state = con.createStatement();
+		if(con == null) {
+			try {
+				getConnection();
+			} catch (ClassNotFoundException e1) {
+				FocusKeeper.logger.error("" + e1);
+			} catch (SQLException e1) {
+				FocusKeeper.logger.error("" + e1);
+			}
+		}
+		try (Statement state = con.createStatement()){
 			String sql = "DROP TABLE Items;";
 			state.executeUpdate(sql);
 			
@@ -93,10 +100,7 @@ public class DatabaseController {
 			state.executeUpdate(sql);
 		} catch (SQLException e) {
 			FocusKeeper.logger.error("" + e);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			FocusKeeper.logger.error("" + e);
-		}	
+		}
 	}
 	
 	//addList()				 :  adds new URLS and list when new blocklist is created
