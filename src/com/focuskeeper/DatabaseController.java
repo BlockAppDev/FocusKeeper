@@ -24,7 +24,7 @@ public class DatabaseController {
 	
 	public static void main(String[] args) throws SQLException, ClassNotFoundException {
 		if(con==null) getConnection();
-		addURLUsage(13, "www.facebook.com");		
+		addURLUsage(13, "www.facebook.com");
 	}
 
 	//getconnection()  		 :  connects to database*
@@ -166,18 +166,22 @@ public class DatabaseController {
 		//adds current elapsed time to current value in URLUsage database
 		//adds new entry if first visit in day
 		int currentTime;
-		int id;
+		int id = 0;
 		LocalDate localDate = LocalDate.now();
         String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
         
 		String getID = "SELECT * FROM Items WHERE Item = '" + url + "';";
 
-		try (Statement state = con.createStatement()){
-			ResultSet gotID = state.executeQuery(getID);
+		try (Statement state = con.createStatement();
+			ResultSet gotID = state.executeQuery(getID)){
 			id = gotID.getInt("ID");
-			String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = " + id + " AND"
-					+ " Date = '" + date + "';";
-			ResultSet usage = state.executeQuery(getUsage);
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("" +e);
+		}
+		String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = " + id + " AND"
+				+ " Date = '" + date + "';";
+		try(Statement state2 = con.createStatement();
+				ResultSet usage = state2.executeQuery(getUsage)){
 			if(usage.next()) {
 				currentTime = usage.getInt(elapsed);
 			} else currentTime = 0;
@@ -187,13 +191,14 @@ public class DatabaseController {
 			//inserts if can (unique constraint won't let it if already there)
 			String add = "INSERT OR IGNORE INTO WebsiteUsage (ID, elapsedTime, Date)\n"
 						+ " VALUES(" + id + ", " + currentTime + ", '" + date + "');";
-			state.executeUpdate(add);
+			state2.executeUpdate(add);
 			
 			//updates is done if the insert failed (done anyways but doesn't matter)
 			String insert = "UPDATE WebsiteUsage SET ID= " + id + ", elapsedTime = "
 						 + currentTime + ", Date = '" + date + "' WHERE"
 						 		+ " ID = " + id + " AND Date = '" + date + "';";
-			state.executeUpdate(insert);
+			state2.executeUpdate(insert);
+			
 		} catch (SQLException e) {
 			FocusKeeper.logger.error("" + e);
 		}								
@@ -230,8 +235,8 @@ public class DatabaseController {
 				+ " ORDER BY elapsed DESC LIMIT 5;";
 		
 		//query for most used
-		try (Statement state = con.createStatement()){
-			ResultSet rs = state.executeQuery(get);
+		try (Statement state = con.createStatement();
+			ResultSet rs = state.executeQuery(get)){
 			while(rs.next()) {
 				mostUsed.put(rs.getString("item"), rs.getInt("elapsed"));
 			}
@@ -252,8 +257,8 @@ public class DatabaseController {
 		LinkedHashMap <String, Integer> recents = new LinkedHashMap<>();
 		String getRecent = "SELECT * FROM WebsiteUsage ORDER BY elapsedTime DESC LIMIT 5;";
 
-		try (Statement state = con.createStatement()){
-			ResultSet usage = state.executeQuery(getRecent);			
+		try (Statement state = con.createStatement();
+			ResultSet usage = state.executeQuery(getRecent)){		
 	        //get values and add to recents list
 	        while(usage.next()) {
 	        	int id = usage.getInt("ID");
@@ -280,8 +285,8 @@ public class DatabaseController {
         String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
         String get = "SELECT * FROM WebsiteUsage WHERE Date='" + date + "';";
 
-		try (Statement state = con.createStatement()){
-	        ResultSet rs = state.executeQuery(get);
+		try (Statement state = con.createStatement();
+	        ResultSet rs = state.executeQuery(get)){
 	        while(rs.next()) {
 	        	totalTimeToday += rs.getInt(elapsed);  	
 	        }
@@ -300,8 +305,8 @@ public class DatabaseController {
         String get = "SELECT * FROM WebsiteUsage WHERE Date = '" + date + "'"
         		+ " AND ID IN (SELECT ID FROM ItemSettings WHERE BlockID = 1);";
         
-		try (Statement state = con.createStatement()){
-	        ResultSet rs = state.executeQuery(get);
+		try (Statement state = con.createStatement();
+	        ResultSet rs = state.executeQuery(get)){
 	        while(rs.next()) {
 	        	totalTimeToday += rs.getInt(elapsed);
 	        }
