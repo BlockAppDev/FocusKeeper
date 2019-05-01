@@ -26,7 +26,6 @@ public class DatabaseController {
 		if(con==null) getConnection();
 		String[] urls = {"www.facebook.com", "www.instagram.com"};
 		addList("School", urls);
-		getDatabaseMetaData();
 	}
 	
 	//getconnection()  		 :  connects to database*
@@ -34,61 +33,70 @@ public class DatabaseController {
 		Class.forName("org.sqlite.JDBC");
 		con = DriverManager.getConnection("jdbc:sqlite:FocusKeeper.db");
 	}
-	 
+	
+	
 	//createTable()			 :  creates all database tables with correct columns (only needs to be called if tables don't exist)
-	public static void createTable() throws SQLException{
+	public static void createTable(){
 		//creates our three tables: URLs, URLSettings, WebsiteUsage
 		if(!hashTables) {
-			Statement state = con.createStatement();
-			String createURLS = "CREATE TABLE IF NOT EXISTS Items (\n"
-					+ " ID INTEGER PRIMARY KEY AUTOINCREMENT, \n"
-					+ " Item text NOT NULL UNIQUE);";
-			state.executeUpdate(createURLS);	
-			
-			String createBlockList = "CREATE TABLE IF NOT EXISTS BlockLists (\n"
-					+ " BlockID INTEGER PRIMARY KEY AUTOINCREMENT, \n"
-					+ " BlockName text NOT NULL UNIQUE);";
-			state.executeUpdate(createBlockList);
-					
-			
-			String createUsage = "CREATE TABLE IF NOT EXISTS WebsiteUsage (\n"
-					+ " ID INTEGER NOT NULL, \n"
-					+ " elapsedTime int DEFAULT 0, \n"
-					+ " Date text NOT NULL, \n"
-					+ " CONSTRAINT UQ_WebsiteUsage UNIQUE(ID, DATE));";   
-												
-			state.executeUpdate(createUsage);	
-			
-			String addNew = "INSERT OR IGNORE INTO BlockLists (BlockID, BlockName)\n"
-					+ " VALUES(null,'Distractions');";
-			state.executeUpdate(addNew);
-			
-			String createSettings = "CREATE TABLE IF NOT EXISTS ItemSettings (\n"
-					+ " ID INTEGER NOT NULL, \n"
-					+ " BlockID INTEGER NOT NULL, \n"
-					+ " CONSTRAINT UQ_URLSettings UNIQUE(ID, BLOCKID));";
-			
-			state.executeUpdate(createSettings);
-			hashTables = true;
+			try (Statement state = con.createStatement()) {
+				String createURLS = "CREATE TABLE IF NOT EXISTS Items (\n"
+						+ " ID INTEGER PRIMARY KEY AUTOINCREMENT, \n"
+						+ " Item text NOT NULL UNIQUE);";
+				state.executeUpdate(createURLS);	
+				String createBlockList = "CREATE TABLE IF NOT EXISTS BlockLists (\n"
+						+ " BlockID INTEGER PRIMARY KEY AUTOINCREMENT, \n"
+						+ " BlockName text NOT NULL UNIQUE);";
+				state.executeUpdate(createBlockList);
+						
+				
+				String createUsage = "CREATE TABLE IF NOT EXISTS WebsiteUsage (\n"
+						+ " ID INTEGER NOT NULL, \n"
+						+ " elapsedTime int DEFAULT 0, \n"
+						+ " Date text NOT NULL, \n"
+						+ " CONSTRAINT UQ_WebsiteUsage UNIQUE(ID, DATE));";   
+													
+				state.executeUpdate(createUsage);	
+				
+				String addNew = "INSERT OR IGNORE INTO BlockLists (BlockID, BlockName)\n"
+						+ " VALUES(null,'Distractions');";
+				state.executeUpdate(addNew);
+				
+				String createSettings = "CREATE TABLE IF NOT EXISTS ItemSettings (\n"
+						+ " ID INTEGER NOT NULL, \n"
+						+ " BlockID INTEGER NOT NULL, \n"
+						+ " CONSTRAINT UQ_URLSettings UNIQUE(ID, BLOCKID));";
+				
+				state.executeUpdate(createSettings);
+			} catch (SQLException e) {
+				FocusKeeper.logger.error("" + e);
+			}
 		}
+		hashTables = true;
 	}
 	
 	//restartDB()			 :  wipe and delete all database tables (cannot be undone)
-	public static void restartDB() throws ClassNotFoundException, SQLException {
-		if(con == null) getConnection();
-		
-		Statement state = con.createStatement();
-		String sql = "DROP TABLE Items;";
-		state.executeUpdate(sql);
-		
-		sql = "DROP TABLE ItemSettings;";
-		state.executeUpdate(sql);
-
-		sql = "DROP TABLE WebsiteUsage;";
-		state.executeUpdate(sql);
-		
-		sql = "DROP TABLE BlockLists;";
-		state.executeUpdate(sql);
+	public static void restartDB() {
+		try {
+			if(con == null) getConnection();
+			Statement state = con.createStatement();
+			String sql = "DROP TABLE Items;";
+			state.executeUpdate(sql);
+			
+			sql = "DROP TABLE ItemSettings;";
+			state.executeUpdate(sql);
+	
+			sql = "DROP TABLE WebsiteUsage;";
+			state.executeUpdate(sql);
+			
+			sql = "DROP TABLE BlockLists;";
+			state.executeUpdate(sql);
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("" + e);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			FocusKeeper.logger.error("" + e);
+		}	
 	}
 	
 	//addList()				 :  adds new URLS and list when new blocklist is created
@@ -112,8 +120,8 @@ public class DatabaseController {
 		state2.executeUpdate(insertQuery.toString());
 
 		//insert into URLSettings id of URLS where URL is in block list passed to function
-			Statement state3 = con.createStatement();
-			//inserting all default values as false
+		Statement state3 = con.createStatement();
+		//inserting all default values as false
             	
             //inserting the URL ID and BlockListName ID into URLSettings
             //ignores this command if URL already exists in database with blockListID
