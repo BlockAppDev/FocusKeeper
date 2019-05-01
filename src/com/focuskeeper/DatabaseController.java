@@ -67,7 +67,7 @@ public class DatabaseController {
 				
 				state.executeUpdate(createSettings);
 			} catch (SQLException e) {
-				FocusKeeper.logger.error("" + e);
+				FocusKeeper.logger.error("%s", e);
 			}
 		}
 		hashTables = true;
