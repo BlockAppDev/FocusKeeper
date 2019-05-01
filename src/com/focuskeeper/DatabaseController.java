@@ -24,7 +24,7 @@ public class DatabaseController {
 	
 	public static void main(String[] args) throws SQLException, ClassNotFoundException {
 		if(con==null) getConnection();
-		addURLUsage(13, "www.facebook.com");
+		getRecentlyUsed();
 	}
 
 	//getconnection()  		 :  connects to database*
@@ -255,26 +255,23 @@ public class DatabaseController {
 		
 		//("www.instagram.com", 45)
 		LinkedHashMap <String, Integer> recents = new LinkedHashMap<>();
-		String getRecent = "SELECT * FROM WebsiteUsage ORDER BY elapsedTime DESC LIMIT 5;";
+		String getRecent = "SELECT u.Item AS item, w.elapsedTime as elapsed"
+				+ " FROM WebsiteUsage AS w"
+				+ " LEFT JOIN Items as u on w.ID = u.ID"
+				+ " ORDER BY elapsed DESC LIMIT 5;";
 
 		try (Statement state = con.createStatement();
 			ResultSet usage = state.executeQuery(getRecent)){		
 	        //get values and add to recents list
 	        while(usage.next()) {
-	        	int id = usage.getInt("ID");
-	        	int time = usage.getInt(elapsed);
-
-	        	Statement state2 = con.createStatement();
-	        	String getURL = "SELECT * FROM Items WHERE ID = '" + id + "';";
-	        	ResultSet url = state2.executeQuery(getURL);
-	        	String foundURL = url.getString("Item");
-	        	
+	        	int time = usage.getInt("elapsed");
+	        	String foundURL = usage.getString("item");
 	        	recents.put(foundURL, time);
 	        }
 		} catch (SQLException e) {
 			FocusKeeper.logger.error("" + e);
 		}
-		   		
+		System.out.println(recents.toString());  		
 		return recents;		
 	}
 	
