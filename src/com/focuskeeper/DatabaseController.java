@@ -15,40 +15,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DatabaseController {
-	private static Connection con;
-	private static boolean hasTables;
+	private static Connection CON;
+	private static boolean HASTABLES;
 	private static String DATEFORMAT = "yyy/MM/dd";
-    static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-    private static ArrayList<String> URLS = new ArrayList<>();
+    static final Logger LOGGER = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+    private static String ELAPSED = "elapsedTime";
 
 	
 	public static void main(String[] args) throws SQLException, ClassNotFoundException {
-		if(con==null) getConnection();
-		
-//		createTable(); only call once
+		if(CON==null) getConnection();
+		String[] urls = {"www.facebook.com", "www.instagram.com"};
+		addList("School", urls);
 		getDatabaseMetaData();
-
-//		restartDB();
-		
-		getDatabaseMetaData();
-		getTotalTimeToday();
-		getTotalFocusTimeToday();
-		
-		getMostUsed("2019/04/29", "2019/04/29");
-		
 	}
 	
 	//getConnection()  		 :  connects to database*
 	private static void getConnection() throws ClassNotFoundException, SQLException {
 		Class.forName("org.sqlite.JDBC");
-		con = DriverManager.getConnection("jdbc:sqlite:FocusKeeper.db");
+		CON = DriverManager.getConnection("jdbc:sqlite:FocusKeeper.db");
 	}
 	
 	//getDatabaseMetaData()  :  prints all database columns and values
 	 public static void getDatabaseMetaData() throws SQLException {
 		 
-			DatabaseMetaData dbmd = con.getMetaData();
-			Statement stmt = con.createStatement();
+			DatabaseMetaData dbmd = CON.getMetaData();
+			Statement stmt = CON.createStatement();
 			String[] types = {"TABLE"};
 			ResultSet rs = dbmd.getTables(null, null, "%", types);
 			ArrayList<String> tableNames = new ArrayList<>();
@@ -61,9 +52,9 @@ public class DatabaseController {
 			//print column values
 			System.out.println("BlockID     BlockName");
 			while (res.next()) {
-				int BlockID = res.getInt("BlockID");
-				String BlockName = res.getString("BlockName");
-				System.out.println(BlockID + "          " + BlockName);
+				int BlockId = res.getInt("BlockID");
+				String blockName = res.getString("BlockName");
+				System.out.println(BlockId + "          " + blockName);
 			    }
 			
 			System.out.println("\n");
@@ -78,8 +69,8 @@ public class DatabaseController {
 			//print column values
 			while (rs.next()) {
 			   int id = rs.getInt("ID");
-			   int blockID = rs.getInt("BlockID");
-			   System.out.println(id+"        "+ blockID);
+			   int blockId = rs.getInt("BlockID");
+			   System.out.println(id+"        "+ blockId);
 			}
 			System.out.println("\n");
 			
@@ -107,7 +98,7 @@ public class DatabaseController {
 			//print column values
 			while(rs.next()) {
 				int id = rs.getInt("id");
-				int time = rs.getInt("elapsedTime");
+				int time = rs.getInt(ELAPSED);
 				String date = rs.getString("Date");
 				System.out.println(id + "      " + time + "        " + date + "      ");
 				
@@ -122,10 +113,10 @@ public class DatabaseController {
 	}
 	 
 	//createTable()			 :  creates all database tables with correct columns (only needs to be called if tables don't exist)
-	public static void createTable() throws SQLException, ClassNotFoundException {
+	public static void createTable() throws SQLException{
 		//creates our three tables: URLs, URLSettings, WebsiteUsage
-		if(!hasTables) {
-			Statement state = con.createStatement();
+		if(!HASTABLES) {
+			Statement state = CON.createStatement();
 			String createURLS = "CREATE TABLE IF NOT EXISTS Items (\n"
 					+ " ID INTEGER PRIMARY KEY AUTOINCREMENT, \n"
 					+ " Item text NOT NULL UNIQUE);";
@@ -155,15 +146,15 @@ public class DatabaseController {
 					+ " CONSTRAINT UQ_URLSettings UNIQUE(ID, BLOCKID));";
 			
 			state.executeUpdate(createSettings);
-			hasTables = true;
+			HASTABLES = true;
 		}
 	}
 	
 	//restartDB()			 :  wipe and delete all database tables (cannot be undone)
 	public static void restartDB() throws ClassNotFoundException, SQLException {
-		if(con == null) getConnection();
+		if(CON == null) getConnection();
 		
-		Statement state = con.createStatement();
+		Statement state = CON.createStatement();
 		String sql = "DROP TABLE Items;";
 		state.executeUpdate(sql);
 		
@@ -179,31 +170,31 @@ public class DatabaseController {
 	
 	//addList()				 :  adds new URLS and list when new blocklist is created
 	//Parameters: Name of new List, and list of URLS in list
-	public static void addList(String list, String[] Urls) throws SQLException{
+	public static void addList(String list, String[] urls) throws SQLException{
 		//adds new list as field in URLSettings database
-		Statement state = con.createStatement();
+		Statement state = CON.createStatement();
 		String addNew = "INSERT OR IGNORE INTO BlockLists (BlockID, BlockName)\n"
 				+ " VALUES(null,'" + list + "');";
 		state.executeUpdate(addNew);
 		StringBuilder insertQuery = new StringBuilder("BEGIN TRANSACTION;\n");
 
 		//adds new URLS to URLs database
-		Statement state2 = con.createStatement();
+		Statement state2 = CON.createStatement();
 		
-		for(String url : Urls) {
-				String insert = (" INSERT OR IGNORE INTO Items (id, Item)\n" + 
-						" VALUES(null, '" + url + "');\n");
+		for(String url : urls) {
+				insertQuery.append((" INSERT OR IGNORE INTO Items (id, Item)\n" + 
+						" VALUES(null, '" + url + "');\n"));
 		}
 		insertQuery.append("COMMIT;");
 		state2.executeUpdate(insertQuery.toString());
 
 		//insert into URLSettings id of URLS where URL is in block list passed to function
-			Statement state3 = con.createStatement();
+			Statement state3 = CON.createStatement();
 			//inserting all default values as false
             	
             //inserting the URL ID and BlockListName ID into URLSettings
             //ignores this command if URL already exists in database with blockListID
-        for(String url : URLS) {
+        for(String url : urls) {
         	String insert = "INSERT or IGNORE INTO ItemSettings (ID, BlockID)\n"
         			+ " VALUES((SELECT ID from Items where Item='" + url + "'), (SELECT BlockID from BlockLists"
         					+ " where BlockName='" + list + "'));";
@@ -217,7 +208,7 @@ public class DatabaseController {
 	public static void deleteList(String list) throws SQLException {
 		//deletes entry in URLSettings where URL is attached to list being dropped
 		//deletes URLS in URLs database where they only existed in deleted list
-		Statement state2 = con.createStatement();
+		Statement state2 = CON.createStatement();
 		String delete = "DELETE FROM ItemSettings WHERE BlockID= (SELECT BlockID FROM BlockLists WHERE BlockName='"
 				+ list + "');";
 		state2.executeUpdate(delete);
@@ -233,7 +224,7 @@ public class DatabaseController {
 	
 	//addURLUsage()			 :	updates URL Usage time each time user goes on new website
 	//Parameters: Time spent on website in current period, name of website
-	public static void addURLUsage(Integer elapsedTime, String URL) throws SQLException {
+	public static void addURLUsage(Integer elapsedTime, String url) throws SQLException {
 		//adds current elapsed time to current value in URLUsage database
 		//adds new entry if first visit in day
 		int currentTime;
@@ -241,9 +232,9 @@ public class DatabaseController {
 		LocalDate localDate = LocalDate.now();
         String date = DateTimeFormatter.ofPattern(DATEFORMAT).format(localDate);
         
-        Statement state = con.createStatement();
+        Statement state = CON.createStatement();
 			
-		String getID = "SELECT * FROM Items WHERE Item = '" + URL + "';";
+		String getID = "SELECT * FROM Items WHERE Item = '" + url + "';";
 		ResultSet gotID = state.executeQuery(getID);
 		id = gotID.getInt("ID");
 		
@@ -252,7 +243,7 @@ public class DatabaseController {
 					+ " Date = '" + date + "';";
 		ResultSet usage = state.executeQuery(getUsage);
 		if(usage.next()) {
-			currentTime = usage.getInt("elapsedTime");
+			currentTime = usage.getInt(ELAPSED);
 		} else currentTime = 0;
 
 		currentTime += elapsedTime;
@@ -295,7 +286,7 @@ public class DatabaseController {
 		datesForQuery.append(")");
 		
 		//query for most used
-		Statement state = con.createStatement();
+		Statement state = CON.createStatement();
 		String get = "SELECT u.Item AS item, sum(w.elapsedTime) AS elapsed"
 				+ " FROM WebsiteUsage AS w"
 				+ " LEFT JOIN Items AS u on w.ID = u.ID"
@@ -306,7 +297,6 @@ public class DatabaseController {
 		while(rs.next()) {
 			mostUsed.put(rs.getString("item"), rs.getInt("elapsed"));
 		}
-		System.out.println(mostUsed);
 		return mostUsed;
 	}
 	
@@ -318,7 +308,7 @@ public class DatabaseController {
 		
 		//("www.instagram.com", 45)
 		LinkedHashMap <String, Integer> recents = new LinkedHashMap<>();
-		Statement state = con.createStatement();
+		Statement state = CON.createStatement();
 		String getRecent = "SELECT * FROM WebsiteUsage ORDER BY elapsedTime DESC LIMIT 5;";
 		ResultSet usage = state.executeQuery(getRecent);
 		//add to lists to return
@@ -326,9 +316,9 @@ public class DatabaseController {
         //save column values
         while(usage.next()) {
         	int id = usage.getInt("ID");
-        	int time = usage.getInt("elapsedTime");
+        	int time = usage.getInt(ELAPSED);
 
-        	Statement state2 = con.createStatement();
+        	Statement state2 = CON.createStatement();
         	String getURL = "SELECT * FROM Items WHERE ID = '" + id + "';";
         	ResultSet url = state2.executeQuery(getURL);
         	String foundURL = url.getString("Item");
@@ -343,23 +333,22 @@ public class DatabaseController {
 	//getTotalTimeToday()	 :  gets total screen time user has spent today 
 	public static int getTotalTimeToday() throws SQLException {
 		int totalTimeToday = 0;
-		Statement state = con.createStatement();
+		Statement state = CON.createStatement();
 		LocalDate localDate = LocalDate.now();
         String date = DateTimeFormatter.ofPattern(DATEFORMAT).format(localDate);
                 
         String get = "SELECT * FROM WebsiteUsage WHERE Date='" + date + "';";
         ResultSet rs = state.executeQuery(get);
         while(rs.next()) {
-        	totalTimeToday += rs.getInt("elapsedTime");  	
+        	totalTimeToday += rs.getInt(ELAPSED);  	
         }
-        System.out.println("total: " + totalTimeToday);
         return totalTimeToday;
 	}
 	
 	//getTotalFocusTimeToday()  :  gets total screen time user has spenr in focus today
 	public static int getTotalFocusTimeToday() throws SQLException {
 		int totalTimeToday = 0;
-		Statement state = con.createStatement();
+		Statement state = CON.createStatement();
 		LocalDate localDate = LocalDate.now();
         String date = DateTimeFormatter.ofPattern(DATEFORMAT).format(localDate);
         
@@ -367,9 +356,8 @@ public class DatabaseController {
         		+ " AND ID IN (SELECT ID FROM ItemSettings WHERE BlockID = 1);";
         ResultSet rs = state.executeQuery(get);
         while(rs.next()) {
-        	totalTimeToday += rs.getInt("elapsedTime");
+        	totalTimeToday += rs.getInt(ELAPSED);
         }
-        System.out.println("focus: " + totalTimeToday);
         return totalTimeToday;
 	}	
 }
