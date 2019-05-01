@@ -78,10 +78,8 @@ public class DatabaseController {
 		if(con == null) {
 			try {
 				getConnection();
-			} catch (ClassNotFoundException e1) {
-				FocusKeeper.logger.error("" + e1);
-			} catch (SQLException e1) {
-				FocusKeeper.logger.error("" + e1);
+			} catch (ClassNotFoundException|SQLException e1) {
+				FocusKeeper.logger.error("%s", e1);
 			}
 		}
 		try (Statement state = con.createStatement()){
@@ -97,7 +95,7 @@ public class DatabaseController {
 			sql = "DROP TABLE BlockLists;";
 			state.executeUpdate(sql);
 		} catch (SQLException e) {
-			FocusKeeper.logger.error("" + e);
+			FocusKeeper.logger.error("%s", e);
 		}
 	}
 	
@@ -110,7 +108,7 @@ public class DatabaseController {
 					+ " VALUES(null,'" + list + "');";
 			state.executeUpdate(addNew);
 		} catch (SQLException e) {
-			FocusKeeper.logger.error("" + e);
+			FocusKeeper.logger.error("%s", e);
 		}	
 		
 		//adds new URLS to URLs database
@@ -123,7 +121,7 @@ public class DatabaseController {
 		try (Statement state2 = con.createStatement()){
 			state2.executeUpdate(insertQuery.toString());
 		} catch (SQLException e) {
-			FocusKeeper.logger.error("" + e);
+			FocusKeeper.logger.error("%s", e);
 		}
 	
 		//insert into URLSettings id of URLS where URL is in block list passed to function
@@ -137,7 +135,7 @@ public class DatabaseController {
 		try (Statement state3 = con.createStatement()){
 	        state3.executeUpdate(insert);
 		} catch (SQLException e) {
-			FocusKeeper.logger.error("" + e);
+			FocusKeeper.logger.error("%s", e);
 		}
 	}
 	
@@ -156,7 +154,7 @@ public class DatabaseController {
 			state2.executeUpdate(delete2);	
 			state2.executeUpdate(delete3);
 		} catch (SQLException e) {
-			FocusKeeper.logger.error("" + e);
+			FocusKeeper.logger.error("%s", e);
 		}
 	}
 	
@@ -176,7 +174,7 @@ public class DatabaseController {
 			ResultSet gotID = state.executeQuery(getID)){
 			id = gotID.getInt("ID");
 		} catch (SQLException e) {
-			FocusKeeper.logger.error("" +e);
+			FocusKeeper.logger.error("%s", e);
 		}
 		String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = " + id + " AND"
 				+ " Date = '" + date + "';";
@@ -200,7 +198,7 @@ public class DatabaseController {
 			state2.executeUpdate(insert);
 			
 		} catch (SQLException e) {
-			FocusKeeper.logger.error("" + e);
+			FocusKeeper.logger.error("%s", e);
 		}								
 	}
 	
@@ -241,7 +239,7 @@ public class DatabaseController {
 				mostUsed.put(rs.getString("item"), rs.getInt("elapsed"));
 			}
 		} catch (SQLException e) {
-			FocusKeeper.logger.error("" + e);
+			FocusKeeper.logger.error("%s", e);
 		}
 
 		return mostUsed;
@@ -269,9 +267,8 @@ public class DatabaseController {
 	        	recents.put(foundURL, time);
 	        }
 		} catch (SQLException e) {
-			FocusKeeper.logger.error("" + e);
+			FocusKeeper.logger.error("%s", e);
 		}
-		System.out.println(recents.toString());  		
 		return recents;		
 	}
 	
@@ -288,7 +285,7 @@ public class DatabaseController {
 	        	totalTimeToday += rs.getInt(elapsed);  	
 	        }
 		} catch (SQLException e) {
-			FocusKeeper.logger.error("" + e);
+			FocusKeeper.logger.error("%s", e);
 		} 
 
         return totalTimeToday;
@@ -308,7 +305,7 @@ public class DatabaseController {
 	        	totalTimeToday += rs.getInt(elapsed);
 	        }
 		} catch (SQLException e) {
-			FocusKeeper.logger.error("" + e);
+			FocusKeeper.logger.error("%s", e);
 		}
 
         return totalTimeToday;
