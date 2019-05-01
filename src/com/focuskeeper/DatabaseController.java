@@ -105,9 +105,7 @@ public class DatabaseController {
 	//Parameters: Name of new List, and list of URLS in list
 	public static void addList(String list, String[] urls){
 		//adds new list as field in URLSettings database
-		Statement state;
-		try {
-			state = con.createStatement();
+		try (Statement state = con.createStatement()){
 			String addNew = "INSERT OR IGNORE INTO BlockLists (BlockID, BlockName)\n"
 					+ " VALUES(null,'" + list + "');";
 			state.executeUpdate(addNew);
@@ -117,14 +115,12 @@ public class DatabaseController {
 		
 		//adds new URLS to URLs database
 		StringBuilder insertQuery = new StringBuilder("BEGIN TRANSACTION;\n");
-		Statement state2;
 		for(String url : urls) {
 			insertQuery.append((" INSERT OR IGNORE INTO Items (id, Item)\n" + 
 					" VALUES(null, '" + url + "');\n"));
 		}
 		insertQuery.append("COMMIT;");
-		try {
-			state2 = con.createStatement();
+		try (Statement state2 = con.createStatement()){
 			state2.executeUpdate(insertQuery.toString());
 		} catch (SQLException e) {
 			FocusKeeper.logger.error("" + e);
@@ -138,15 +134,12 @@ public class DatabaseController {
         					+ " where BlockName='" + list + "'));";
         }
         
-		Statement state3;
-		try {
-			state3 = con.createStatement();
+		try (Statement state3 = con.createStatement()){
 	        state3.executeUpdate(insert);
 		} catch (SQLException e) {
 			FocusKeeper.logger.error("" + e);
 		}
 	}
-	
 	
 	//deleteList()			 :	deletes blocklist and it's URLs (if not used by another list)
 	//Parameters: Name of the list to be deleted
@@ -158,9 +151,7 @@ public class DatabaseController {
 		String delete2 = "DELETE FROM Items WHERE ID NOT IN (SELECT US.ID FROM ItemSettings US);";
 		String delete3 = "DELETE FROM BlockLists WHERE BlockName='" + list + "';";
 
-		Statement state2;
-		try {
-			state2 = con.createStatement();
+		try (Statement state2 = con.createStatement()){
 			state2.executeUpdate(delete);
 			state2.executeUpdate(delete2);	
 			state2.executeUpdate(delete3);
@@ -181,9 +172,7 @@ public class DatabaseController {
         
 		String getID = "SELECT * FROM Items WHERE Item = '" + url + "';";
 
-        Statement state;
-		try {
-			state = con.createStatement();
+		try (Statement state = con.createStatement()){
 			ResultSet gotID = state.executeQuery(getID);
 			id = gotID.getInt("ID");
 			String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = " + id + " AND"
@@ -241,9 +230,7 @@ public class DatabaseController {
 				+ " ORDER BY elapsed DESC LIMIT 5;";
 		
 		//query for most used
-		Statement state;
-		try {
-			state = con.createStatement();
+		try (Statement state = con.createStatement()){
 			ResultSet rs = state.executeQuery(get);
 			while(rs.next()) {
 				mostUsed.put(rs.getString("item"), rs.getInt("elapsed"));
@@ -265,9 +252,7 @@ public class DatabaseController {
 		LinkedHashMap <String, Integer> recents = new LinkedHashMap<>();
 		String getRecent = "SELECT * FROM WebsiteUsage ORDER BY elapsedTime DESC LIMIT 5;";
 
-		Statement state;
-		try {
-			state = con.createStatement();
+		try (Statement state = con.createStatement()){
 			ResultSet usage = state.executeQuery(getRecent);			
 	        //get values and add to recents list
 	        while(usage.next()) {
@@ -295,9 +280,7 @@ public class DatabaseController {
         String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
         String get = "SELECT * FROM WebsiteUsage WHERE Date='" + date + "';";
 
-		Statement state;
-		try {
-			state = con.createStatement();
+		try (Statement state = con.createStatement()){
 	        ResultSet rs = state.executeQuery(get);
 	        while(rs.next()) {
 	        	totalTimeToday += rs.getInt(elapsed);  	
@@ -317,9 +300,7 @@ public class DatabaseController {
         String get = "SELECT * FROM WebsiteUsage WHERE Date = '" + date + "'"
         		+ " AND ID IN (SELECT ID FROM ItemSettings WHERE BlockID = 1);";
         
-		Statement state;
-		try {
-			state = con.createStatement();
+		try (Statement state = con.createStatement()){
 	        ResultSet rs = state.executeQuery(get);
 	        while(rs.next()) {
 	        	totalTimeToday += rs.getInt(elapsed);
