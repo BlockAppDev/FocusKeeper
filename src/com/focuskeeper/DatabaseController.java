@@ -24,16 +24,14 @@ public class DatabaseController {
 	
 	public static void main(String[] args) throws SQLException, ClassNotFoundException {
 		if(con==null) getConnection();
-		String[] urls = {"www.facebook.com", "www.instagram.com"};
-		addList("School", urls);
+		addURLUsage(13, "www.facebook.com");		
 	}
-	
+
 	//getconnection()  		 :  connects to database*
 	private static void getConnection() throws ClassNotFoundException, SQLException {
 		Class.forName("org.sqlite.JDBC");
 		con = DriverManager.getConnection("jdbc:sqlite:FocusKeeper.db");
 	}
-	
 	
 	//createTable()			 :  creates all database tables with correct columns (only needs to be called if tables don't exist)
 	public static void createTable(){
@@ -105,61 +103,75 @@ public class DatabaseController {
 	
 	//addList()				 :  adds new URLS and list when new blocklist is created
 	//Parameters: Name of new List, and list of URLS in list
-	public static void addList(String list, String[] urls) throws SQLException{
+	public static void addList(String list, String[] urls){
 		//adds new list as field in URLSettings database
-		Statement state = con.createStatement();
-		String addNew = "INSERT OR IGNORE INTO BlockLists (BlockID, BlockName)\n"
-				+ " VALUES(null,'" + list + "');";
-		state.executeUpdate(addNew);
-		StringBuilder insertQuery = new StringBuilder("BEGIN TRANSACTION;\n");
-
-		//adds new URLS to URLs database
-		Statement state2 = con.createStatement();
+		Statement state;
+		try {
+			state = con.createStatement();
+			String addNew = "INSERT OR IGNORE INTO BlockLists (BlockID, BlockName)\n"
+					+ " VALUES(null,'" + list + "');";
+			state.executeUpdate(addNew);
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("" + e);
+		}	
 		
+		//adds new URLS to URLs database
+		StringBuilder insertQuery = new StringBuilder("BEGIN TRANSACTION;\n");
+		Statement state2;
 		for(String url : urls) {
-				insertQuery.append((" INSERT OR IGNORE INTO Items (id, Item)\n" + 
-						" VALUES(null, '" + url + "');\n"));
+			insertQuery.append((" INSERT OR IGNORE INTO Items (id, Item)\n" + 
+					" VALUES(null, '" + url + "');\n"));
 		}
 		insertQuery.append("COMMIT;");
-		state2.executeUpdate(insertQuery.toString());
-
+		try {
+			state2 = con.createStatement();
+			state2.executeUpdate(insertQuery.toString());
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("" + e);
+		}
+	
 		//insert into URLSettings id of URLS where URL is in block list passed to function
-		Statement state3 = con.createStatement();
-		//inserting all default values as false
-            	
-            //inserting the URL ID and BlockListName ID into URLSettings
-            //ignores this command if URL already exists in database with blockListID
+		String insert = "";
         for(String url : urls) {
-        	String insert = "INSERT or IGNORE INTO ItemSettings (ID, BlockID)\n"
+        	insert = "INSERT or IGNORE INTO ItemSettings (ID, BlockID)\n"
         			+ " VALUES((SELECT ID from Items where Item='" + url + "'), (SELECT BlockID from BlockLists"
         					+ " where BlockName='" + list + "'));";
-        	state3.executeUpdate(insert);
         }
+        
+		Statement state3;
+		try {
+			state3 = con.createStatement();
+	        state3.executeUpdate(insert);
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("" + e);
+		}
 	}
 	
 	
 	//deleteList()			 :	deletes blocklist and it's URLs (if not used by another list)
 	//Parameters: Name of the list to be deleted
-	public static void deleteList(String list) throws SQLException {
+	public static void deleteList(String list){
 		//deletes entry in URLSettings where URL is attached to list being dropped
 		//deletes URLS in URLs database where they only existed in deleted list
-		Statement state2 = con.createStatement();
 		String delete = "DELETE FROM ItemSettings WHERE BlockID= (SELECT BlockID FROM BlockLists WHERE BlockName='"
 				+ list + "');";
-		state2.executeUpdate(delete);
-		
 		String delete2 = "DELETE FROM Items WHERE ID NOT IN (SELECT US.ID FROM ItemSettings US);";
-		state2.executeUpdate(delete2);
-		
 		String delete3 = "DELETE FROM BlockLists WHERE BlockName='" + list + "';";
-		state2.executeUpdate(delete3);
 
-		
+		Statement state2;
+		try {
+			state2 = con.createStatement();
+			state2.executeUpdate(delete);
+			state2.executeUpdate(delete2);	
+			state2.executeUpdate(delete3);
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("" + e);
+		}
 	}
 	
 	//addURLUsage()			 :	updates URL Usage time each time user goes on new website
 	//Parameters: Time spent on website in current period, name of website
-	public static void addURLUsage(Integer elapsedTime, String url) throws SQLException {
+	public static void addURLUsage(Integer elapsedTime, String url) {
 		//adds current elapsed time to current value in URLUsage database
 		//adds new entry if first visit in day
 		int currentTime;
@@ -167,38 +179,40 @@ public class DatabaseController {
 		LocalDate localDate = LocalDate.now();
         String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
         
-        Statement state = con.createStatement();
-			
 		String getID = "SELECT * FROM Items WHERE Item = '" + url + "';";
-		ResultSet gotID = state.executeQuery(getID);
-		id = gotID.getInt("ID");
-		
-		
-		String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = " + id + " AND"
-					+ " Date = '" + date + "';";
-		ResultSet usage = state.executeQuery(getUsage);
-		if(usage.next()) {
-			currentTime = usage.getInt(elapsed);
-		} else currentTime = 0;
 
-		currentTime += elapsedTime;
-		
-		//inserts if can (unique constraint won't let it if already there)
-		String add = "INSERT OR IGNORE INTO WebsiteUsage (ID, elapsedTime, Date)\n"
-					+ " VALUES(" + id + ", " + currentTime + ", '" + date + "');";
-		state.executeUpdate(add);
-		
-		//updates is done if the insert failed (done anyways but doesn't matter)
-		String insert = "UPDATE WebsiteUsage SET ID= " + id + ", elapsedTime = "
-					 + currentTime + ", Date = '" + date + "' WHERE"
-					 		+ " ID = " + id + " AND Date = '" + date + "';";
-		state.executeUpdate(insert);
-							
+        Statement state;
+		try {
+			state = con.createStatement();
+			ResultSet gotID = state.executeQuery(getID);
+			id = gotID.getInt("ID");
+			String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = " + id + " AND"
+					+ " Date = '" + date + "';";
+			ResultSet usage = state.executeQuery(getUsage);
+			if(usage.next()) {
+				currentTime = usage.getInt(elapsed);
+			} else currentTime = 0;
+
+			currentTime += elapsedTime;
+			
+			//inserts if can (unique constraint won't let it if already there)
+			String add = "INSERT OR IGNORE INTO WebsiteUsage (ID, elapsedTime, Date)\n"
+						+ " VALUES(" + id + ", " + currentTime + ", '" + date + "');";
+			state.executeUpdate(add);
+			
+			//updates is done if the insert failed (done anyways but doesn't matter)
+			String insert = "UPDATE WebsiteUsage SET ID= " + id + ", elapsedTime = "
+						 + currentTime + ", Date = '" + date + "' WHERE"
+						 		+ " ID = " + id + " AND Date = '" + date + "';";
+			state.executeUpdate(insert);
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("" + e);
+		}								
 	}
 	
 	//getMostUsed()		:		returns a map with url and total minutes spent on that site in the given date range
 	//Parameters: Two Strings in form "yyy/MM/dd" representing start date and end date, including
-	public static Map<String, Integer> getMostUsed(String start, String end) throws SQLException {
+	public static Map<String, Integer> getMostUsed(String start, String end) {
 		//queries to get sites with highest elapsedTime in WebsiteUsage
 
 		LinkedHashMap <String, Integer> mostUsed = new LinkedHashMap<>();
@@ -219,80 +233,101 @@ public class DatabaseController {
 			}
 		}
 		datesForQuery.append(")");
-		
-		//query for most used
-		Statement state = con.createStatement();
 		String get = "SELECT u.Item AS item, sum(w.elapsedTime) AS elapsed"
 				+ " FROM WebsiteUsage AS w"
 				+ " LEFT JOIN Items AS u on w.ID = u.ID"
 				+ " WHERE w.Date IN " + datesForQuery 
 				+ " GROUP BY u.Item"
 				+ " ORDER BY elapsed DESC LIMIT 5;";
-		ResultSet rs = state.executeQuery(get);
-		while(rs.next()) {
-			mostUsed.put(rs.getString("item"), rs.getInt("elapsed"));
+		
+		//query for most used
+		Statement state;
+		try {
+			state = con.createStatement();
+			ResultSet rs = state.executeQuery(get);
+			while(rs.next()) {
+				mostUsed.put(rs.getString("item"), rs.getInt("elapsed"));
+			}
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("" + e);
 		}
+
 		return mostUsed;
 	}
 	
 
 	//getRecentlyUsed()		 :  gets top 5 most visited sites that day (to display on hope page of application)
-	public static Map<String, Integer> getRecentlyUsed() throws SQLException {
+	public static Map<String, Integer> getRecentlyUsed() {
 		//queries to get sites recently used in WebsiteUsage
 		//same as print but add to a dictionary-type thing
 		
 		//("www.instagram.com", 45)
 		LinkedHashMap <String, Integer> recents = new LinkedHashMap<>();
-		Statement state = con.createStatement();
 		String getRecent = "SELECT * FROM WebsiteUsage ORDER BY elapsedTime DESC LIMIT 5;";
-		ResultSet usage = state.executeQuery(getRecent);
-		//add to lists to return
-		
-        //save column values
-        while(usage.next()) {
-        	int id = usage.getInt("ID");
-        	int time = usage.getInt(elapsed);
 
-        	Statement state2 = con.createStatement();
-        	String getURL = "SELECT * FROM Items WHERE ID = '" + id + "';";
-        	ResultSet url = state2.executeQuery(getURL);
-        	String foundURL = url.getString("Item");
-        	
-        	recents.put(foundURL, time);
-        }
-        		
-		return recents;
-		
+		Statement state;
+		try {
+			state = con.createStatement();
+			ResultSet usage = state.executeQuery(getRecent);			
+	        //get values and add to recents list
+	        while(usage.next()) {
+	        	int id = usage.getInt("ID");
+	        	int time = usage.getInt(elapsed);
+
+	        	Statement state2 = con.createStatement();
+	        	String getURL = "SELECT * FROM Items WHERE ID = '" + id + "';";
+	        	ResultSet url = state2.executeQuery(getURL);
+	        	String foundURL = url.getString("Item");
+	        	
+	        	recents.put(foundURL, time);
+	        }
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("" + e);
+		}
+		   		
+		return recents;		
 	}
 	
 	//getTotalTimeToday()	 :  gets total screen time user has spent today 
-	public static int getTotalTimeToday() throws SQLException {
+	public static int getTotalTimeToday() {
 		int totalTimeToday = 0;
-		Statement state = con.createStatement();
 		LocalDate localDate = LocalDate.now();
         String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
-                
         String get = "SELECT * FROM WebsiteUsage WHERE Date='" + date + "';";
-        ResultSet rs = state.executeQuery(get);
-        while(rs.next()) {
-        	totalTimeToday += rs.getInt(elapsed);  	
-        }
+
+		Statement state;
+		try {
+			state = con.createStatement();
+	        ResultSet rs = state.executeQuery(get);
+	        while(rs.next()) {
+	        	totalTimeToday += rs.getInt(elapsed);  	
+	        }
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("" + e);
+		} 
+
         return totalTimeToday;
 	}
 	
 	//getTotalFocusTimeToday()  :  gets total screen time user has spenr in focus today
-	public static int getTotalFocusTimeToday() throws SQLException {
+	public static int getTotalFocusTimeToday() {
 		int totalTimeToday = 0;
-		Statement state = con.createStatement();
 		LocalDate localDate = LocalDate.now();
         String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
-        
         String get = "SELECT * FROM WebsiteUsage WHERE Date = '" + date + "'"
         		+ " AND ID IN (SELECT ID FROM ItemSettings WHERE BlockID = 1);";
-        ResultSet rs = state.executeQuery(get);
-        while(rs.next()) {
-        	totalTimeToday += rs.getInt(elapsed);
-        }
+        
+		Statement state;
+		try {
+			state = con.createStatement();
+	        ResultSet rs = state.executeQuery(get);
+	        while(rs.next()) {
+	        	totalTimeToday += rs.getInt(elapsed);
+	        }
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("" + e);
+		}
+
         return totalTimeToday;
 	}	
 }
