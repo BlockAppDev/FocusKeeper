@@ -3,6 +3,11 @@ package com.focuskeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.BrowserCore;
+import com.teamdev.jxbrowser.chromium.internal.Environment;
+import com.teamdev.jxbrowser.chromium.javafx.BrowserView;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -18,16 +23,23 @@ public class FocusKeeper extends Application {
     static OS os = Util.getPlatform();
 
     @Override
+    public void init() throws Exception {
+        if (Environment.isMac()) {
+            BrowserCore.initialize();
+        }
+    }
+    
+    @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("FocusKeeper");
-        primaryStage.setScene(new Scene(root, 350, 450));
+        
+        Browser browser = new Browser();
+        BrowserView view = new BrowserView(browser);
+        
+        primaryStage.setScene(new Scene(view, 350, 450));
         primaryStage.show();
 
-        WebView view = (WebView) root.lookup("#main_view");
-
-        final WebEngine webEngine = view.getEngine();
-        webEngine.load(Server.getAddr());
+        browser.loadURL(Server.getAddr());
     }
 
     public static void main(String[] args) {
@@ -45,5 +57,7 @@ public class FocusKeeper extends Application {
         launch(args);
 
         focuskeeper.server.stopServer();
+        
+        System.exit(0); // Make sure all threads terminate
     }
 }
