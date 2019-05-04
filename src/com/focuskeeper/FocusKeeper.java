@@ -1,5 +1,19 @@
 package com.focuskeeper;
 
+import java.awt.AWTException;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,19 +23,23 @@ import com.teamdev.jxbrowser.chromium.internal.Environment;
 import com.teamdev.jxbrowser.chromium.javafx.BrowserView;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class FocusKeeper extends Application {
     Server server;
+    Stage stage;
     static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     BlockController<String> blockController;
+    long lastFocusChange = 0;
     static OS os = Util.getPlatform();
-
+    
     @Override
     public void init() throws Exception {
         if (Environment.isMac()) {
@@ -29,9 +47,101 @@ public class FocusKeeper extends Application {
         }
     }
     
+    public void initTray() {
+        Toolkit.getDefaultToolkit();
+        
+        if(!java.awt.SystemTray.isSupported()) {
+            FocusKeeper.logger.error("Platform not supported");
+            Platform.exit();
+        }
+        
+        SystemTray tray = SystemTray.getSystemTray();
+        
+        Image icon = null;
+        try {
+            icon = ImageIO.read(new File("icon.png"));
+        } catch (IOException e) {
+            FocusKeeper.logger.error("Problem loading tray icon {}", e);
+        }
+        
+        TrayIcon trayIcon = new TrayIcon(icon);
+        
+        FocusKeeper fk = this;
+        trayIcon.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent event) {
+                if(event.getButton() != 1) {
+                    // Ignore anything other than a left click
+                    return;
+                }
+                Platform.runLater(fk::toggleShowStage);
+            }
+        });
+        
+        PopupMenu menu = new PopupMenu();
+        
+        MenuItem exitItem = new MenuItem("Exit FocusKeeper");
+        exitItem.addActionListener(event -> Platform.exit());
+        menu.add(exitItem);
+        
+        trayIcon.setPopupMenu(menu);
+        
+        try {
+            tray.add(trayIcon);
+        } catch (AWTException e) {
+            FocusKeeper.logger.error(e.getMessage());
+        }
+    }
+    
+    public void toggleShowStage() {
+        if(System.currentTimeMillis() - lastFocusChange < 100) {
+            return;
+        }
+        
+        lastFocusChange = System.currentTimeMillis();
+        
+        if(stage.isShowing()) {
+            stage.hide();
+        }
+        else {
+            stage.show();
+        }
+    }
+    
+    public void positionWindow() {
+        int x = 0;
+        int y = 0;
+
+        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+        
+        if(FocusKeeper.os == OS.WINDOWS) {
+            x = (int) (bounds.getMaxX() - 400);
+            y = (int) (bounds.getMaxY() - 475);
+        }
+        
+        this.stage.setX(x);
+        this.stage.setY(y);
+    }
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("FocusKeeper");
+        this.stage = primaryStage;
+        Platform.setImplicitExit(false);
+        
+        FocusKeeper fk = this;
+        primaryStage.focusedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean hidden, Boolean focused) {
+                if(!focused && fk.lastFocusChange - System.currentTimeMillis() > 100) {
+                    fk.lastFocusChange = System.currentTimeMillis();
+                    stage.hide();
+                }
+            }
+        });
+        
+        javax.swing.SwingUtilities.invokeLater(this::initTray);
+        
+        primaryStage.initStyle(StageStyle.UNDECORATED);
+        this.positionWindow();
         
         Browser browser = new Browser();
         BrowserView view = new BrowserView(browser);
@@ -54,7 +164,7 @@ public class FocusKeeper extends Application {
         }
 
         // Launch GUI
-        launch(args);
+        FocusKeeper.launch(args);
 
         focuskeeper.server.stopServer();
         
