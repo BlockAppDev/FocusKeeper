@@ -131,7 +131,7 @@ public class FocusKeeper extends Application {
         primaryStage.focusedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> ov, Boolean hidden, Boolean focused) {
-                if(!focused && fk.lastFocusChange - System.currentTimeMillis() > 100) {
+                if(!focused && System.currentTimeMillis() - fk.lastFocusChange > 100) {
                     fk.lastFocusChange = System.currentTimeMillis();
                     stage.hide();
                 }
