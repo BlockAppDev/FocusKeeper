@@ -3,13 +3,11 @@ package com.focuskeeper;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -198,7 +196,6 @@ public class DatabaseController {
 		} catch(SQLException e) {
 			FocusKeeper.logger.error("%s", e);
 		}
-		System.out.println(id);
 		String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = ? AND"
 				+ " Date = ?;";
 		try(PreparedStatement prep2 = con.prepareStatement(getUsage)){
@@ -241,7 +238,6 @@ public class DatabaseController {
 		} catch (SQLException e) {
 			FocusKeeper.logger.error("%s", e);
 		}
-		System.out.println(currentTime);
 	}
 	
 	//getMostUsed()		:		returns a map with url and total minutes spent on that site in the given date range
