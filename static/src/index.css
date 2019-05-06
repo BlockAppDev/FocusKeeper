@@ -244,6 +244,7 @@ h5 {
 h6 {
   font-size: 0.5rem; }
 
+
 @media (min-width: 600px) {
   h1:not(:first-child),
   h2:not(:first-child),
@@ -667,6 +668,26 @@ caption {
 @media (min-width: 600px) {
   .contain-table {
     width: 100%; } }
+
+/* Block list table */
+body {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 200;
+  font-size: 12px;
+}
+
+.scroll-container{
+    max-height: 150px;
+    overflow-y: scroll;
+}
+
+#home {
+    width: 350px;
+    height: 450px;
+    background-color: white;
+}
+
+
 
 
  
