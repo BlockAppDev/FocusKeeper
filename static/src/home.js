@@ -121,7 +121,7 @@ class Home extends Component {
 
   render() {
     let data = [
-      {"seconds": 100 * 300, "focused": true, "name": "VSCode"},
+      {"seconds": 100 * 300 + 120 * 10, "focused": true, "name": "VSCode"},
       {"seconds": 23 * 300, "focused": false, "name": "Netflix"},
       {"seconds": 32 * 300, "focused": true, "name": "Piazza"}
     ];
@@ -137,7 +137,7 @@ class Home extends Component {
           style={{backgroundColor: this.state.focused ? "#358562": "white"}}>
           <input type="checkbox" id="focus-box" checked={this.state.focused}></input>
           <span id="focus-mode-text" style={{color: this.state.focused ? "white" : "black"}}>Focus Mode</span>
-          <i className="fas fa-cog icon" id="settings-cog" onClick={this.handleOnClick}></i>
+          <i className="fas fa-cog icon" id="settings-cog" style={{color: this.state.focused ? "white" : "black"}} onClick={this.handleOnClick}></i>
           <hr></hr>
         </div>
         <div id="icon-holder">
@@ -246,6 +246,7 @@ function secondsToHours(seconds) {
 }
 
 
+<<<<<<< HEAD
  
 function getTimeDetails(total_time, total_focus, data) {
     for(let item of data) {
@@ -255,8 +256,44 @@ function getTimeDetails(total_time, total_focus, data) {
     	}
   	}
   	return [total_time, total_focus];
+=======
+  let degree_width = item.seconds / total * 360;
+
+  let arc = <path d=
+    {describeArc(radius, radius, radius - stroke_width, previous, previous + degree_width)}
+    fill="none"
+    strokeWidth={stroke_width}
+    stroke={item.color}
+    key={Math.random()}></path>
+
+  return [previous + degree_width, arc];
+>>>>>>> 547c3e1208f285da3300ae74468b7db425d27423
 }
 
 
+<<<<<<< HEAD
+=======
+  let circles = [];
+  let previous = 0;
+  for(let item of data) {
+    let result = getCircle(height, total_time, previous, item);
+    previous = result[0];
+    circles.push(result[1]);
+  }
+
+  let start_y = 85;
+  let text_x = width / 2 - 65;
+  return (<div>
+    <svg height={height} width={width}>
+      {circles}
+      <text x={text_x} y={start_y}>In Focus</text>
+      <text x={text_x} y={start_y + 30} fontSize="2em" fontWeight="bold">{ secondsToHours(total_focus) }</text>
+
+      <text x={text_x} y={start_y + 60}>Total Screentime</text>
+      <text x={text_x} y={start_y + 90} fontSize="2em" fontWeight="bold">{ secondsToHours(total_time) }</text>
+    </svg>
+  </div>);
+}
+>>>>>>> 547c3e1208f285da3300ae74468b7db425d27423
 
 export default Home;
