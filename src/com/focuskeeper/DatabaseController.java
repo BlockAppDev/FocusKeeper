@@ -39,7 +39,7 @@ public class DatabaseController {
 			encryptedString = new String(messageDigest.digest());
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			FocusKeeper.logger.error("" + e);
 		}
 		Class.forName("org.sqlite.JDBC");
 		con = DriverManager.getConnection("jdbc:sqlite:FocusKeeper.db", "admin", encryptedString);
