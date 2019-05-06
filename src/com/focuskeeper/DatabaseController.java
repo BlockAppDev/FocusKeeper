@@ -3,12 +3,10 @@ package com.focuskeeper;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -27,10 +25,11 @@ public class DatabaseController {
 		getRecentlyUsed();
 	}
 
+		 
 	//getconnection()  		 :  connects to database*
 	private static void getConnection() throws ClassNotFoundException, SQLException {
 		Class.forName("org.sqlite.JDBC");
-		con = DriverManager.getConnection("jdbc:sqlite:FocusKeeper.db");
+		con = DriverManager.getConnection("jdbc:sqlite:FocusKeeper.db", "admin", "PA55W0RD");
 	}
 	
 	//createTable()			 :  creates all database tables with correct columns (only needs to be called if tables don't exist)
