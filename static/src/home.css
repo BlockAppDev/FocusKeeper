@@ -2,15 +2,19 @@
     width: 350px;
     height: 450px;
     background-color: white;
+    border: 1px solid #4A90E2;
 }
 
 #focus-box {
+    cursor: pointer;
     display: inline-block;
     transform: scale(1.5);
     margin: 20px 20px 5px 20px;
 }
 
 #focus-mode-text {
+    cursor: pointer;
+    user-select: none;
     font-weight: bold;
     font-size: 1.2em;
 }
@@ -84,4 +88,11 @@
 .recent-items-time {
     margin-right: 15px;
     float: right;
+}
+
+#hover-info {
+    font-size: 0.7em;
+    padding: 5px 5px 5px 5px;
+    box-shadow: 5px 5px 2px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
 }
