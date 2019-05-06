@@ -163,6 +163,9 @@ public class FocusKeeper extends Application {
             return;
         }
 
+        DataCollector dataCollector = new DataCollector();
+        dataCollector.startAsync();
+
         // Launch GUI
         FocusKeeper.launch(args);
 
