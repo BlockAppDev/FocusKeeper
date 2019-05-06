@@ -3,10 +3,13 @@ package com.focuskeeper;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -25,10 +28,81 @@ public class DatabaseController {
 	
 	public static void main(String[] args) throws SQLException, ClassNotFoundException {
 		if(con==null) getConnection();
-		getRecentlyUsed();
+		getDatabaseMetaData();
 	}
 
-		 
+	//getDatabaseMetaData()  :  prints all database columns and values
+	 public static void getDatabaseMetaData() throws SQLException {
+		DatabaseMetaData dbmd = con.getMetaData();
+		Statement stmt = con.createStatement();
+		String[] types = {"TABLE"};
+		ResultSet rs = dbmd.getTables(null, null, "%", types);
+		ArrayList<String> tableNames = new ArrayList<>();
+		while(rs.next())
+			tableNames.add(rs.getString("TABLE_NAME"));
+		//print BlockLists
+		System.out.println(tableNames.get(0));
+		ResultSet res = stmt.executeQuery("SELECT * FROM BlockLists");
+		//print column values
+		System.out.println("BlockID     BlockName");
+		while (res.next()) {
+			int blockid = res.getInt("BlockID");
+			String blockname = res.getString("BlockName");
+			System.out.println(blockid + "          " + blockname);
+		    }
+		
+		System.out.println("\n");
+		
+		//print URLs Table
+		System.out.println(tableNames.get(1));
+		rs = stmt.executeQuery("SELECT * FROM ItemSettings");
+		
+		//permanent column names
+		System.out.println("ID    BlockId");
+		
+		//print column values
+		while (rs.next()) {
+		   int id = rs.getInt("ID");
+		   int blockid = rs.getInt("BlockID");
+		   System.out.println(id+"        "+ blockid);
+		}
+		System.out.println("\n");
+		
+		
+		//print WebsiteUsage Table
+		System.out.println(tableNames.get(2));
+		rs = stmt.executeQuery("SELECT * FROM Items");
+		
+		//permanent column names - no need to grab from table
+		System.out.println("ID      Item");
+		
+		while(rs.next()) {
+			int id = rs.getInt("ID");
+			String url = rs.getString("Item");
+			System.out.println(id + "    " + url);
+		}
+		System.out.println("\n");
+		
+		
+		System.out.println(tableNames.get(3));
+		rs = stmt.executeQuery("SELECT * FROM WebsiteUsage");
+		
+		//permanenet column names
+		System.out.println("ID     Elapsed     Date");
+		//print column values
+		while(rs.next()) {
+			int id = rs.getInt("id");
+			int time = rs.getInt(elapsed);
+			String date = rs.getString("Date");
+			System.out.println(id + "      " + time + "        " + date + "      ");
+			
+		}
+		System.out.println();	
+	}
+	
+	
+	
+	
 	//getconnection()  		 :  connects to database*
 	private static void getConnection() throws ClassNotFoundException, SQLException {
 		MessageDigest messageDigest;
@@ -38,8 +112,7 @@ public class DatabaseController {
 			messageDigest.update("password".getBytes());
 			encryptedString = new String(messageDigest.digest());
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			FocusKeeper.logger.error("" + e);
+			FocusKeeper.logger.error("%s", e);
 		}
 		Class.forName("org.sqlite.JDBC");
 		con = DriverManager.getConnection("jdbc:sqlite:FocusKeeper.db", "admin", encryptedString);
@@ -53,7 +126,8 @@ public class DatabaseController {
 				String createURLS = "CREATE TABLE IF NOT EXISTS Items (\n"
 						+ " ID INTEGER PRIMARY KEY AUTOINCREMENT, \n"
 						+ " Item text NOT NULL UNIQUE);";
-				state.executeUpdate(createURLS);	
+				state.executeUpdate(createURLS);
+				
 				String createBlockList = "CREATE TABLE IF NOT EXISTS BlockLists (\n"
 						+ " BlockID INTEGER PRIMARY KEY AUTOINCREMENT, \n"
 						+ " BlockName text NOT NULL UNIQUE);";
@@ -115,10 +189,11 @@ public class DatabaseController {
 	//Parameters: Name of new List, and list of URLS in list
 	public static void addList(String list, String[] urls){
 		//adds new list as field in URLSettings database
-		try (Statement state = con.createStatement()){
-			String addNew = "INSERT OR IGNORE INTO BlockLists (BlockID, BlockName)\n"
-					+ " VALUES(null,'" + list + "');";
-			state.executeUpdate(addNew);
+		String addNew = "INSERT OR IGNORE INTO BlockLists (BlockID, BlockName)\n"
+				+ " VALUES(null, ?);";
+		try (PreparedStatement prep = con.prepareStatement(addNew)){
+			prep.setString(1, list);
+			prep.executeUpdate();
 		} catch (SQLException e) {
 			FocusKeeper.logger.error("%s", e);
 		}	
@@ -140,15 +215,18 @@ public class DatabaseController {
 		String insert = "";
         for(String url : urls) {
         	insert = "INSERT or IGNORE INTO ItemSettings (ID, BlockID)\n"
-        			+ " VALUES((SELECT ID from Items where Item='" + url + "'), (SELECT BlockID from BlockLists"
-        					+ " where BlockName='" + list + "'));";
+        			+ " VALUES((SELECT ID from Items where Item=?), (SELECT BlockID from BlockLists"
+        					+ " where BlockName=?));";
+    		try (PreparedStatement prep2 = con.prepareStatement(insert)){
+    			prep2.setString(1, url);
+    			prep2.setString(2, list);
+    			prep2.executeUpdate();
+    		} catch (SQLException e) {
+    			FocusKeeper.logger.error("%s", e);
+    		}
         }
         
-		try (Statement state3 = con.createStatement()){
-	        state3.executeUpdate(insert);
-		} catch (SQLException e) {
-			FocusKeeper.logger.error("%s", e);
-		}
+
 	}
 	
 	//deleteList()			 :	deletes blocklist and it's URLs (if not used by another list)
@@ -156,15 +234,18 @@ public class DatabaseController {
 	public static void deleteList(String list){
 		//deletes entry in URLSettings where URL is attached to list being dropped
 		//deletes URLS in URLs database where they only existed in deleted list
-		String delete = "DELETE FROM ItemSettings WHERE BlockID= (SELECT BlockID FROM BlockLists WHERE BlockName='"
-				+ list + "');";
+		String delete = "DELETE FROM ItemSettings WHERE BlockID= (SELECT BlockID FROM BlockLists WHERE BlockName=?);";
 		String delete2 = "DELETE FROM Items WHERE ID NOT IN (SELECT US.ID FROM ItemSettings US);";
-		String delete3 = "DELETE FROM BlockLists WHERE BlockName='" + list + "';";
+		String delete3 = "DELETE FROM BlockLists WHERE BlockName=?;";
 
-		try (Statement state2 = con.createStatement()){
-			state2.executeUpdate(delete);
+		try (Statement state2 = con.createStatement();
+				PreparedStatement prep = con.prepareStatement(delete);
+				PreparedStatement prep2 = con.prepareStatement(delete3)){
+			prep.setString(1, list);
+			prep.executeUpdate();
+			prep2.setString(1, list);
+			prep2.executeUpdate();
 			state2.executeUpdate(delete2);	
-			state2.executeUpdate(delete3);
 		} catch (SQLException e) {
 			FocusKeeper.logger.error("%s", e);
 		}
@@ -175,43 +256,63 @@ public class DatabaseController {
 	public static void addURLUsage(Integer elapsedTime, String url) {
 		//adds current elapsed time to current value in URLUsage database
 		//adds new entry if first visit in day
-		int currentTime;
+		int currentTime = 0;
 		int id = 0;
 		LocalDate localDate = LocalDate.now();
         String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
-        
-		String getID = "SELECT * FROM Items WHERE Item = '" + url + "';";
+		String getID = "SELECT ID FROM Items WHERE Item = ?;";
 
-		try (Statement state = con.createStatement();
-			ResultSet gotID = state.executeQuery(getID)){
+		try(PreparedStatement prep = con.prepareStatement(getID)){
+			prep.setString(1, url);
+			ResultSet gotID = prep.executeQuery();
 			id = gotID.getInt("ID");
+		} catch(SQLException e) {
+			FocusKeeper.logger.error("%s", e);
+		}
+		System.out.println(id);
+		String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = ? AND"
+				+ " Date = ?;";
+		try(PreparedStatement prep2 = con.prepareStatement(getUsage)){
+			prep2.setInt(1, id);
+			prep2.setString(2, date);
+			//does this work??
+			try(ResultSet usage = prep2.executeQuery()){
+				if(usage.next()) {
+					currentTime = usage.getInt(elapsed);
+				} else currentTime = 0;
+				currentTime += elapsedTime;
+			}
 		} catch (SQLException e) {
 			FocusKeeper.logger.error("%s", e);
 		}
-		String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = " + id + " AND"
-				+ " Date = '" + date + "';";
-		try(Statement state2 = con.createStatement();
-				ResultSet usage = state2.executeQuery(getUsage)){
-			if(usage.next()) {
-				currentTime = usage.getInt(elapsed);
-			} else currentTime = 0;
-
-			currentTime += elapsedTime;
-			
-			//inserts if can (unique constraint won't let it if already there)
-			String add = "INSERT OR IGNORE INTO WebsiteUsage (ID, elapsedTime, Date)\n"
-						+ " VALUES(" + id + ", " + currentTime + ", '" + date + "');";
-			state2.executeUpdate(add);
-			
-			//updates is done if the insert failed (done anyways but doesn't matter)
-			String insert = "UPDATE WebsiteUsage SET ID= " + id + ", elapsedTime = "
-						 + currentTime + ", Date = '" + date + "' WHERE"
-						 		+ " ID = " + id + " AND Date = '" + date + "';";
-			state2.executeUpdate(insert);
+	
+		String add = "INSERT OR IGNORE INTO WebsiteUsage (ID, elapsedTime, Date)\n"
+				+ " VALUES(?, ?, ?);";
+		
+		try(PreparedStatement prep3 = con.prepareStatement(add)){
+			prep3.setInt(1, id);
+			prep3.setInt(2, currentTime);
+			prep3.setString(3, date);
+			prep3.executeUpdate();
+		} catch (SQLException e) {
+			FocusKeeper.logger.error("%s", e);
+		}
+		
+		String insert = "UPDATE WebsiteUsage SET ID= ?, elapsedTime = ?, Date = ? WHERE"
+				 		+ " ID = ? AND Date = ?;";
+		
+		try(PreparedStatement prep4 = con.prepareStatement(insert)){
+			prep4.setInt(1, id);
+			prep4.setInt(2, currentTime);
+			prep4.setString(3, date);
+			prep4.setInt(4, id);
+			prep4.setString(5, date);
+			prep4.executeUpdate();
 			
 		} catch (SQLException e) {
 			FocusKeeper.logger.error("%s", e);
-		}								
+		}
+		System.out.println(currentTime);
 	}
 	
 	//getMostUsed()		:		returns a map with url and total minutes spent on that site in the given date range
