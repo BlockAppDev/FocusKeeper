@@ -11,6 +11,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 
 public class DatabaseController {
 	private static Connection con;
@@ -28,8 +31,18 @@ public class DatabaseController {
 		 
 	//getconnection()  		 :  connects to database*
 	private static void getConnection() throws ClassNotFoundException, SQLException {
+		MessageDigest messageDigest;
+		String encryptedString = "";
+		try {
+			messageDigest = MessageDigest.getInstance("SHA-256");
+			messageDigest.update("password".getBytes());
+			encryptedString = new String(messageDigest.digest());
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		Class.forName("org.sqlite.JDBC");
-		con = DriverManager.getConnection("jdbc:sqlite:FocusKeeper.db", "admin", "PA55W0RD");
+		con = DriverManager.getConnection("jdbc:sqlite:FocusKeeper.db", "admin", encryptedString);
 	}
 	
 	//createTable()			 :  creates all database tables with correct columns (only needs to be called if tables don't exist)
