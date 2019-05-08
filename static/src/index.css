@@ -219,24 +219,24 @@ h3:not(:first-child) {
   margin-top: 2rem; }
 
 h1 {
-  font-size: 1.75rem; 
+  font-size: 12px; 
   color: #1C5D99;}
 
 h2 {
-  font-size: 1.5rem; }
+  font-size: 12px; }
 
 h3 {
-  font-size: 1.25rem; }
+  font-size: 12px; }
 
 h4 {
   font-size: 1.1rem; }
 
 h5 {
-  font-size: 1rem; }
+  font-size: 12px; }
 
 
 h6 {
-  font-size: 0.5rem; }
+  font-size: 12px; }
 
 
 @media (min-width: 600px) {
@@ -247,9 +247,9 @@ h6 {
   h1 {
     font-size: 2.25rem; }
   h2 {
-    font-size: 2rem; }
+    font-size: 1.5rem; }
   h3 {
-    font-size: 1.75rem; }
+    font-size: 1.5rem; }
   h4 {
     font-size: 1.5rem; }
   h5 {
@@ -671,7 +671,7 @@ body {
 }
 
 .scroll-container{
-    max-height: 150px;
+    max-height: 100px;
     overflow-y: scroll;
 }
 
@@ -679,6 +679,30 @@ body {
     width: 350px;
     height: 450px;
     background-color: white;
+}
+
+/* input form group */
+
+
+.input-group {
+  width: 350px !important;
+  height: 25px !important;
+}
+
+.form-control {
+  width: 350px !important;
+}
+
+span.input-group-addon {
+  width: 350px !important;
+}
+
+.input-xs {
+  height: 22px;
+  padding: 2px 5px;
+  font-size: 12px;
+  line-height: 1.5; /* If Placeholder of the input is moved up, rem/modify this. */
+  border-radius: 3px;
 }
 
 
