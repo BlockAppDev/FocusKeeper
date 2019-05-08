@@ -157,8 +157,10 @@ class Home extends Component {
           <hr></hr>
         </div>
         <div id="icon-holder">
-          <i className="fas fa-chart-pie icon" onClick={() => {this.chart_type = "pie"}} ></i>
-          <i className="fas fa-chart-bar icon" onClick={() => {this.chart_type = "bar"}}></i>
+          <i className="fas fa-chart-pie icon" onClick={() => {this.chart_type = "pie"}} style={{color: this.chart_type === "pie" ? "#4A90E2" : null, 
+              opacity: this.chart_type === "pie" ? 1.0 : null}} ></i>
+          <i className="fas fa-chart-bar icon" onClick={() => {this.chart_type = "bar"}} style={{color: this.chart_type === "bar" ? "#4A90E2" : null, 
+              opacity: this.chart_type === "bar" ? 1.0 : null}}></i>
         </div>
         <div id="date-selector">
           <span>Today</span>

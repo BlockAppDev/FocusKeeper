@@ -33,6 +33,7 @@
 
 .icon:hover {
     color: #4A90E2;
+    opacity: 0.5;
 }
 
 #settings-cog {
