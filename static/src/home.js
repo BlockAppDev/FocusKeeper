@@ -11,16 +11,24 @@ class Home extends Component {
       y:0
     }
     this.hover_item = null;
+    this.chart_type = "pie";
 
     window.addEventListener("mousemove", function(event) {
       this.setState({x: event.clientX, y: event.clientY});
-      console.log(event.screenX)
     }.bind(this));
   }
 
 	handleOnClick = () => {
     let path = '/NewBlockList';
     this.props.history.push(path);
+  }
+
+  handleChartClick = (data) => {
+    if (this.chart_type === "pie") {
+        return this.renderPieChart(250, 250, data);
+    } else if (this.chart_type === "bar") {
+        return this.renderBarChart(250, 250, data);
+      }
   }
 
   _onMouseMove(e) {
@@ -30,13 +38,14 @@ class Home extends Component {
   getBar(maxWidth, maxHeight, numItems, total_time, previous, item) {
     let width = maxWidth / (numItems*2);
     let startX = 0;
-    let rect_height = item.seconds / total_time * maxHeight;
-    if (previous == 0) {
-      startX = 0;
+    let leftAlign = maxWidth/2 - (numItems*width/2);
+    let rect_height = item.seconds / total_time * (maxHeight - 20);
+    if (previous === 0) {
+      startX = leftAlign;
     } else {
       startX = previous + 3; 
     }
-    return [startX + width, <rect onMouseEnter={() => {this.hover_item = item}} onMouseLeave={() => {this.hover_item = null}} x={startX} y={maxHeight - rect_height} width = {width} height = {rect_height} style={{fill: item.color}} />]
+    return [startX + width, <rect key = {Math.random()} rx = {5} ry = {5} onMouseEnter={() => {this.hover_item = item}} onMouseLeave={() => {this.hover_item = null}} x={startX} y={maxHeight - rect_height} width = {width} height = {rect_height} style={{fill: item.color}} />]
   }
 
   renderBarChart(height, width, data) {
@@ -50,8 +59,8 @@ class Home extends Component {
     total_time = results[0];
     total_focus = results[1];
   
-    if (data.length >= 7) {
-      len = 7;
+    if (data.length >= 20) {
+      len = 20;
     } else {
       len = data.length;
     }
@@ -61,9 +70,16 @@ class Home extends Component {
       previous = result[0];
       bars.push(result[1]);
     }
+    let start_y = 40;
+    let text_x = 0;
     return (<div>
       <svg height={height} width={width}>
         {bars}
+        <text x={text_x} y={start_y}>In Focus</text>
+        <text x={text_x} y={start_y + 30} fontSize="1.5em" fontWeight="bold">{ secondsToHours(total_focus) }</text>
+  
+        <text x={text_x + 120} y={start_y}>Total Screentime</text>
+        <text x={text_x + 120} y={start_y + 30} fontSize="1.5em" fontWeight="bold">{ secondsToHours(total_time) }</text>
       </svg>
     </div>);
   
@@ -141,19 +157,19 @@ class Home extends Component {
           <hr></hr>
         </div>
         <div id="icon-holder">
-          <i className="fas fa-chart-pie icon"></i>
-          <i className="fas fa-chart-bar icon"></i>
+          <i className="fas fa-chart-pie icon" onClick={() => {this.chart_type = "pie"}} ></i>
+          <i className="fas fa-chart-bar icon" onClick={() => {this.chart_type = "bar"}}></i>
         </div>
         <div id="date-selector">
           <span>Today</span>
           <span>Past Week</span>
           <span>Custom</span>
         </div>
-        <div id="data-vis">
+        {  <div id="data-vis">
           <div id="pie-chart-container">
-            { this.renderBarChart(250, 250, data) }
+            { this.handleChartClick(data) }
           </div>
-        </div>
+        </div>  }
 
         <div id="recently-used">
           <span id="recently-used-text">Recently Used</span>
