@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import "./home.css";
 import "@fortawesome/fontawesome-free/css/all.css"
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 
 class Home extends Component {
   constructor(props) {
@@ -139,7 +140,10 @@ class Home extends Component {
     let data = [
       {"seconds": 100 * 300 + 120 * 10, "focused": true, "name": "VSCode"},
       {"seconds": 23 * 300, "focused": false, "name": "Netflix"},
-      {"seconds": 32 * 300, "focused": true, "name": "Piazza"}
+      {"seconds": 32 * 300, "focused": true, "name": "Piazza"},
+      {"seconds": 38 * 300, "focused": true, "name": "Calpoly.edu"},
+      {"seconds": 43 * 300, "focused": false, "name": "Youtube"},
+      {"seconds":  58* 300, "focused": true, "name": "Slack"}
     ];
 
     colorizeData(data);
@@ -185,8 +189,8 @@ class Home extends Component {
 function renderRecents(data) {
   let recents = [];
 
-  for(let item of data) {
-    recents.push(getRecentText(item));
+  for(let i = 0; i < 3; i++) {
+    recents.push(getRecentText(data[i]));
   }
 
   return recents;
@@ -202,7 +206,7 @@ function getRecentText(item) {
 }
 
 function colorizeData(data) {
-  let colors = ["#00FF92", "#0076FF"];
+  let colors = ["#F353FF", "#00FF92", "#0076FF", "#FFFE71", "#FFB63F"];
   for(let i = 0; i < data.length; i++) {
     let item = data[i];
     if(item.focused) {
