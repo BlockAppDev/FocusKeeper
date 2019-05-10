@@ -113,13 +113,20 @@ public class FocusKeeper extends Application {
 
         Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
         
+        // pop up location for Windows
         if(FocusKeeper.os == OS.WINDOWS) {
-            x = (int) (bounds.getMaxX() - 400);
+            x = (int) (bounds.getMaxX() - 430);
             y = (int) (bounds.getMaxY() - 475);
         }
+        // pop up location for Mac
+        else {
+        	x = (int) (bounds.getMaxX() - 420);
+        	y = (int) (bounds.getMaxY() - 715);
+       }
         
         this.stage.setX(x);
         this.stage.setY(y);
+        
     }
     
     @Override
