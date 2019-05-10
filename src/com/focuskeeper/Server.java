@@ -38,6 +38,18 @@ public class Server {
                 return "{'focus_time': 4566, 'distracted_time': 6345}";
             })
         );
+        
+        path("/blocked", () ->
+            get("", (request, response) -> {
+                String submittedUrl = request.queryMap().get("url").value();
+                boolean should_block = false;
+                if(submittedUrl.length() % 2 == 0) {
+                    should_block = true;
+                }
+                response.header("Content-Type", "application/json");
+                return "{'blocked': " + should_block + "}";
+            })
+        );
     }
 
     public void stopServer() {
