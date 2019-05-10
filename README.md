@@ -1,14 +1,4 @@
-# BlockApp
-Desktop application for blocking content
+# FocusKeeper
+Desktop application for blocking distracting content.
 
-Daniel Dohnalek
-
-Katie Buck
-
-Roshan Prabhakar
-
-Pranathi Guntupalli
-
-Sydney Jaques
-
-Thomas Dillon
+![Early version][lib/screenshot.png]

@@ -59,7 +59,7 @@ public class FocusKeeper extends Application {
         
         Image icon = null;
         try {
-            icon = ImageIO.read(new File("icon.png"));
+            icon = ImageIO.read(new File("lib/icon.png"));
         } catch (IOException e) {
             FocusKeeper.logger.error("Problem loading tray icon {}", e);
         }
