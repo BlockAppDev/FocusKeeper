@@ -3,6 +3,21 @@ import "./home.css";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "inter-ui/inter.css";
 
+let mouse = {x: 0, y: 0};
+
+class HoverBox extends Component {
+  render() {
+    if (this.props.item) {
+      return (<div id="hover-info" className="gtext" style={{top: mouse.y + 10, left: mouse.x + 10}}>
+        <b><span>{this.props.item ? this.props.item.name : ""}</span></b>
+        <div></div>
+        <span>{this.props.item ? secondsToHours(this.props.item.seconds) : ""}</span>
+      </div>)
+    }
+    return null;
+  }
+}
+
 class Home extends Component {
   constructor(props) {
     super(props);
@@ -11,19 +26,26 @@ class Home extends Component {
       hover_item: null,
       chart_type: "pie"
     }
-    this.mouse = {x: 0, y: 0};
+
     this.colors = {};
 
     window.addEventListener("mousemove", function(event) {
-      this.mouse.x = event.clientX;
-      this.mouse.y = event.clientY;
+      mouse.x = event.clientX;
+      mouse.y = event.clientY;
 
       let hover_div = document.getElementById("hover-info");
       if(hover_div) {
-        hover_div.style.top = this.mouse.y + 10 + "px";
-        hover_div.style.left = this.mouse.x + 10 + "px";
+        hover_div.style.top = mouse.y + 10 + "px";
+        hover_div.style.left = mouse.x + 10 + "px";
       }
     }.bind(this));
+
+    window.setInterval(function() {
+      let elem = document.elementFromPoint(mouse.x, mouse.y);
+      if(elem.tagName !== "rect" && elem.tagName !== "path") {
+        this.setState({hover_item: null});
+      }
+    }.bind(this), 50);
   }
 
 	handleOnClick = () => {
@@ -141,17 +163,6 @@ class Home extends Component {
     </div>);
   }
 
-  onItem() {
-    if (this.state.hover_item) {
-      return (<div id="hover-info" className="gtext" style={{top: this.mouse.y + 10, left: this.mouse.x + 10}}>
-        <b><span>{this.state.hover_item ? this.state.hover_item.name : ""}</span></b>
-        <div></div>
-        <span>{this.state.hover_item ? secondsToHours(this.state.hover_item.seconds) : ""}</span>
-      </div>)
-    }
-    return null;
-  }
-
   colorizeData(data) {
     let colors = ["#00FF92", "#0076FF"];
 
@@ -185,7 +196,7 @@ class Home extends Component {
 
     return (
       <div id="home">
-        {this.onItem()}
+        <HoverBox item={this.state.hover_item}></HoverBox>
         <div id="home-header"
           onClick={() => this.setState({focused: !this.state.focused})}
           style={{backgroundColor: this.state.focused ? "#358562": "white"}}>
