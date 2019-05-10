@@ -115,7 +115,7 @@ public class FocusKeeper extends Application {
         
         // pop up location for Windows
         if(FocusKeeper.os == OS.WINDOWS) {
-            x = (int) (bounds.getMaxX() - 490);
+            x = (int) (bounds.getMaxX() - 430);
             y = (int) (bounds.getMaxY() - 475);
         }
         // pop up location for Mac
