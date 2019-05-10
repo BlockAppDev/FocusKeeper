@@ -161,7 +161,7 @@ public class FocusKeeper extends Application {
 
     public static void main(String[] args) {
         FocusKeeper focuskeeper = new FocusKeeper();
-        /*focuskeeper.blockController = new HostFileBlocker();*/
+        // focuskeeper.blockController = new HostFileBlocker();
         focuskeeper.server = new Server();
         try {
             focuskeeper.server.run();
