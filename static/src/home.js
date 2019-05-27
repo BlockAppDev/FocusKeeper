@@ -2,6 +2,12 @@ import React, { Component } from 'react';
 import "./home.css";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "inter-ui/inter.css";
+import $ from "jquery";
+
+let SERVER_ADDR = "http://localhost:8000"
+let endpoints = {
+  stats: SERVER_ADDR + "/stats"
+};
 
 let mouse = {x: 0, y: 0};
 
@@ -24,12 +30,16 @@ class Home extends Component {
     this.state = {
       focused: false,
       hover_item: null,
-      chart_type: "pie"
+      chart_type: "pie",
+      data: [{"name": "none", "seconds": 1}]
     }
 
     this.colors = {};
 
-    window.addEventListener("mousemove", function(event) {
+    this.refreshData();
+    window.setInterval(() => this.refreshData(), 5000);
+
+    window.addEventListener("mousemove", (event) => {
       mouse.x = event.clientX;
       mouse.y = event.clientY;
 
@@ -38,14 +48,20 @@ class Home extends Component {
         hover_div.style.top = mouse.y + 10 + "px";
         hover_div.style.left = mouse.x + 10 + "px";
       }
-    }.bind(this));
+    });
 
     window.setInterval(function() {
       let elem = document.elementFromPoint(mouse.x, mouse.y);
-      if(elem.tagName !== "rect" && elem.tagName !== "path") {
+      if(elem.tagName !== "rect" && elem.tagName !== "path" && this.state.hover_item != null) {
         this.setState({hover_item: null});
       }
     }.bind(this), 50);
+  }
+
+  refreshData() {
+    $.getJSON(endpoints.stats, {start: getDate(), end: getDate()}, (response) => {
+      this.setState({data: response});
+    })
   }
 
 	handleOnClick = () => {
@@ -182,17 +198,8 @@ class Home extends Component {
   }
 
   render() {
-    let data = [
-      {"seconds": 100 * 100, "focused": true, "name": "VSCode"},
-      {"seconds": 23 * 100, "focused": false, "name": "Netflix"},
-      {"seconds": 32 * 100, "focused": true, "name": "Piazza"},
-      {"seconds": 38 * 100, "focused": true, "name": "Calpoly.edu"},
-      {"seconds": 43 * 100, "focused": false, "name": "Youtube"},
-      {"seconds":  58* 100, "focused": true, "name": "Slack"}
-    ];
-
-    this.colorizeData(data);
-    sortData(data);
+    this.colorizeData(this.state.data);
+    sortData(this.state.data);
 
     return (
       <div id="home">
@@ -222,13 +229,13 @@ class Home extends Component {
         </div>
         {  <div id="data-vis">
           <div id="pie-chart-container">
-            { this.handleChartClick(data) }
+            { this.handleChartClick(this.state.data) }
           </div>
         </div>  }
 
         <div id="recently-used" className="gtext">
           <span id="recently-used-text">Recently Used</span>
-          { renderRecents(data) }
+          { renderRecents(this.state.data) }
         </div>
       </div>
     )
@@ -238,7 +245,8 @@ class Home extends Component {
 function renderRecents(data) {
   let recents = [];
 
-  for(let i = 0; i < 3; i++) {
+  let recent_max = Math.min(3, data.length);
+  for(let i = 0; i < recent_max; i++) {
     recents.push(getRecentText(data[i]));
   }
 
@@ -309,6 +317,22 @@ function getTimeDetails(total_time, total_focus, data) {
     	}
   	}
   	return [total_time, total_focus];
+}
+
+function getDate() {
+  // format YYYY/MM/DD
+  let date = new Date();
+  let date_string = date.getFullYear() + "";
+  let month = date.getMonth();
+  if(month.length == 1) {
+    month = "0" + month;
+  }
+  let day = date.getDate();
+  if(day.length == 1) {
+    day = "0" + day;
+  }
+  
+  return date_string + month + day;
 }
 
 export default Home;

@@ -1,5 +1,7 @@
 package com.focuskeeper;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.sql.Connection;
@@ -19,8 +21,25 @@ public class DatabaseController {
 	private static Connection con;
 	private static boolean hashTables;
 	private static String dateFormat = "yyy/MM/dd";
+	public static final String DB_NAME = "FocusKeeper.db";
 	static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 	private static String elapsed = "elapsedTime";
+
+	public static void connect() {
+	    boolean db_exists = Files.exists(Paths.get(DB_NAME));
+
+		try {
+			getConnection();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			FocusKeeper.logger.error(e.getMessage());
+		}
+
+		if(!db_exists) {
+		    createTable();
+        }
+	}
 
 	// getconnection() : connects to database*
 	private static void getConnection() throws ClassNotFoundException, SQLException {
@@ -162,66 +181,81 @@ public class DatabaseController {
 		}
 	}
 
-	// addURLUsage() : updates URL Usage time each time user goes on new website
-	// Parameters: Time spent on website in current period, name of website
-	public static void addURLUsage(Integer elapsedTime, String url) {
-		// adds current elapsed time to current value in URLUsage database
-		// adds new entry if first visit in day
-		int currentTime = 0;
-		int id = 0;
-		LocalDate localDate = LocalDate.now();
-		String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
-		String getID = "SELECT ID FROM Items WHERE Item = ?;";
+    public static void addItem(String item) {
+        String add = "INSERT INTO Items (Item)\n"
+                + "VALUES(?);";
+        try (PreparedStatement prep = con.prepareStatement(add)){
+            prep.setString(1, item);
+            prep.executeUpdate();
+        } catch (SQLException e) {
+            FocusKeeper.logger.error("%s", e);
+        }
+    }
 
-		try (PreparedStatement prep = con.prepareStatement(getID)) {
-			prep.setString(1, url);
-			try (ResultSet gotID = prep.executeQuery()) {
-				id = gotID.getInt("ID");
-			}
-		} catch (SQLException e) {
-			FocusKeeper.logger.error("%s", e);
-		}
-		String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = ? AND" + " Date = ?;";
-		try (PreparedStatement prep2 = con.prepareStatement(getUsage)) {
-			prep2.setInt(1, id);
-			prep2.setString(2, date);
-			// does this work??
-			try (ResultSet usage = prep2.executeQuery()) {
-				if (usage.next()) {
-					currentTime = usage.getInt(elapsed);
-				} else
-					currentTime = 0;
-				currentTime += elapsedTime;
-			}
-		} catch (SQLException e) {
-			FocusKeeper.logger.error("%s", e);
-		}
+    //addURLUsage()          :  updates URL Usage time each time user goes on new website
+    //Parameters: Time spent on website in current period, name of website
+    public static synchronized void addURLUsage(Integer elapsedTime, String url) {
+        //adds current elapsed time to current value in URLUsage database
+        //adds new entry if first visit in day
+        int currentTime = 0;
+        int id = 0;
+        LocalDate localDate = LocalDate.now();
+        String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
+        String getID = "SELECT ID FROM Items WHERE Item = ?;";
+        try(PreparedStatement prep = con.prepareStatement(getID)){
+            prep.setString(1, url);
+            try(ResultSet gotID = prep.executeQuery()){
+                if(gotID.next()) id = gotID.getInt("ID");
+                else {
+                    addItem(url);
+                }
+            }
+        } catch(SQLException e) {
+            FocusKeeper.logger.error("%s", e);
+        }
+        String getUsage = "SELECT * FROM WebsiteUsage WHERE ID = ? AND"
+                + " Date = ?;";
+        try(PreparedStatement prep2 = con.prepareStatement(getUsage)){
+            prep2.setInt(1, id);
+            prep2.setString(2, date);
+            //does this work??
+            try(ResultSet usage = prep2.executeQuery()){
+                if(usage.next()) {
+                    currentTime = usage.getInt(elapsed);
+                } else currentTime = 0;
+                currentTime += elapsedTime;
+            }
+        } catch (SQLException e) {
+            FocusKeeper.logger.error("%s", e);
+        }
 
-		String add = "INSERT OR IGNORE INTO WebsiteUsage (ID, elapsedTime, Date)\n" + " VALUES(?, ?, ?);";
+        String add = "INSERT OR IGNORE INTO WebsiteUsage (ID, elapsedTime, Date)\n"
+                + " VALUES(?, ?, ?);";
 
-		try (PreparedStatement prep3 = con.prepareStatement(add)) {
-			prep3.setInt(1, id);
-			prep3.setInt(2, currentTime);
-			prep3.setString(3, date);
-			prep3.executeUpdate();
-		} catch (SQLException e) {
-			FocusKeeper.logger.error("%s", e);
-		}
+        try(PreparedStatement prep3 = con.prepareStatement(add)){
+            prep3.setInt(1, id);
+            prep3.setInt(2, currentTime);
+            prep3.setString(3, date);
+            prep3.executeUpdate();
+        } catch (SQLException e) {
+            FocusKeeper.logger.error("%s", e);
+        }
 
-		String insert = "UPDATE WebsiteUsage SET ID= ?, elapsedTime = ?, Date = ? WHERE" + " ID = ? AND Date = ?;";
+        String insert = "UPDATE WebsiteUsage SET ID= ?, elapsedTime = ?, Date = ? WHERE"
+                + " ID = ? AND Date = ?;";
 
-		try (PreparedStatement prep4 = con.prepareStatement(insert)) {
-			prep4.setInt(1, id);
-			prep4.setInt(2, currentTime);
-			prep4.setString(3, date);
-			prep4.setInt(4, id);
-			prep4.setString(5, date);
-			prep4.executeUpdate();
+        try(PreparedStatement prep4 = con.prepareStatement(insert)){
+            prep4.setInt(1, id);
+            prep4.setInt(2, currentTime);
+            prep4.setString(3, date);
+            prep4.setInt(4, id);
+            prep4.setString(5, date);
+            prep4.executeUpdate();
 
-		} catch (SQLException e) {
-			FocusKeeper.logger.error("%s", e);
-		}
-	}
+        } catch (SQLException e) {
+            FocusKeeper.logger.error("%s", e);
+        }
+    }
 
 	// getMostUsed() : returns a map with url and total minutes spent on that site
 	// in the given date range

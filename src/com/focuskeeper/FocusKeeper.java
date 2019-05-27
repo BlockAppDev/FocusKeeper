@@ -170,6 +170,8 @@ public class FocusKeeper extends Application {
             return;
         }
 
+        DatabaseController.connect();
+
         DataCollector dataCollector = new DataCollector();
         dataCollector.startAsync();
 

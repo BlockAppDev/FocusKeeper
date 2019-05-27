@@ -45,6 +45,7 @@
     <orderEntry type="library" name="Maven: org.eclipse.jetty.websocket:websocket-servlet:9.4.15.v20190215" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty.websocket:websocket-api:9.4.15.v20190215" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-simple:1.7.21" level="project" />
+    <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.5" level="project" />
     <orderEntry type="library" name="Maven: com.teamdev.jxbrowser:jxbrowser-win32:6.22" level="project" />
     <orderEntry type="library" name="Maven: com.teamdev.jxbrowser:jxbrowser:6.22" level="project" />
     <orderEntry type="library" name="Maven: com.teamdev.jxbrowser:jxbrowser-win64:6.22" level="project" />
