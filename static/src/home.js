@@ -59,7 +59,9 @@ class Home extends Component {
   }
 
   refreshData() {
-    $.getJSON(endpoints.stats, {start: getDate(), end: getDate()}, (response) => {
+    let start = getDate();
+    let end = start;
+    $.getJSON(`${endpoints.stats}?start=${start}&end=${end}`, (response) => {
       this.setState({data: response});
     })
   }
@@ -292,7 +294,7 @@ function describeArc(x, y, radius, startAngle, endAngle){
       "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
   ].join(" ");
 
-  return d;       
+  return d;
 }
 
 function secondsToHours(seconds) {
@@ -323,16 +325,16 @@ function getDate() {
   // format YYYY/MM/DD
   let date = new Date();
   let date_string = date.getFullYear() + "";
-  let month = date.getMonth();
-  if(month.length == 1) {
+  let month = (date.getMonth() + 1) + "";
+  if(month.length === 1) {
     month = "0" + month;
   }
-  let day = date.getDate();
-  if(day.length == 1) {
+  let day = date.getDate() + "";
+  if(day.length === 1) {
     day = "0" + day;
   }
   
-  return date_string + month + day;
+  return `${date_string}/${month}/${day}`;
 }
 
 export default Home;

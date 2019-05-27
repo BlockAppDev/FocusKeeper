@@ -3,6 +3,7 @@ package com.focuskeeper;
 import static spark.Spark.*;
 
 import com.google.gson.Gson;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import spark.Filter;
 
 import java.util.ArrayList;
@@ -45,25 +46,28 @@ public class Server {
     }
 
     public String stats(spark.Request request, spark.Response response) {
+        String start = request.queryMap().get("start").value();
+        String end = request.queryMap().get("end").value();
+
         response.header("Content-Type", "application/json");
-        Map<String, Integer> mostUsed = DatabaseController.getMostUsed("2019/05/27", "2019/05/27");
+        Map<String, Integer> mostUsed = DatabaseController.getMostUsed(start, end);
         List<StatsItem> mostUsedList = new ArrayList<>();
         for(String name: mostUsed.keySet()) {
             mostUsedList.add(new StatsItem(name, mostUsed.get(name), true));
         }
 
-        Gson gson = new Gson();
-        return gson.toJson(mostUsedList);
+        return new Gson().toJson(mostUsedList);
     }
 
     public String blocked(spark.Request request, spark.Response response) {
         String submittedUrl = request.queryMap().get("url").value();
-        boolean should_block = false;
-        if(submittedUrl.length() % 2 == 0) {
-            should_block = true;
-        }
+        boolean shouldBlock = FocusKeeper.focusController.shouldBlock(submittedUrl);
         response.header("Content-Type", "application/json");
-        return "{'blocked': " + should_block + "}";
+
+        HashMap<String, Boolean> responseJson = new HashMap<>();
+        responseJson.put("blocked", shouldBlock);
+
+        return new Gson().toJson(responseJson);
     }
 
     public void stopServer() {
