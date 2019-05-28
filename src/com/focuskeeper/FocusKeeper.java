@@ -163,6 +163,8 @@ public class FocusKeeper extends Application {
     public static void main(String[] args) {
         FocusKeeper focuskeeper = new FocusKeeper();
 
+        DatabaseController.connect();
+
         FocusKeeper.focusController = new FocusController();
 
         /*focuskeeper.blockController = new HostFileBlocker();*/
@@ -173,8 +175,6 @@ public class FocusKeeper extends Application {
             FocusKeeper.logger.error("Server start error", e);
             return;
         }
-
-        DatabaseController.connect();
 
         DataCollector dataCollector = new DataCollector();
         dataCollector.startAsync();

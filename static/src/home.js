@@ -55,7 +55,7 @@ class Home extends Component {
       if(elem.tagName !== "rect" && elem.tagName !== "path" && this.state.hover_item != null) {
         this.setState({hover_item: null});
       }
-    }.bind(this), 50);
+    }.bind(this), 1000);
   }
 
   refreshData() {
