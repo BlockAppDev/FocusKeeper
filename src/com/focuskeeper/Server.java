@@ -32,17 +32,25 @@ public class Server {
 
         options("/*", (request, response) -> "ok");
 
-        path("/data", () ->
-            put("", (request, response) -> {
-                System.out.println(request.params());
-                response.header("Content-Type", "application/json");
-                return "{'message': 'success'}";
-            })
-        );
+        path("/data", () -> put("", this::data));
+
+        path("/focused", () -> get("", (request, response) -> {
+            return "";
+        }));
 
         path("/stats", () -> get("", this::stats));
 
         path("/blocked", () -> get("", this::blocked));
+    }
+
+    public String data(spark.Request request, spark.Response response) {
+        String host = request.queryParams("url");
+        String seconds = request.queryParams("seconds");
+        int intSeconds = Integer.parseInt(seconds);
+        DatabaseController.addURLUsage(intSeconds, host);
+        DatabaseController.addURLUsage(-intSeconds, "chrome");
+        response.header("Content-Type", "application/json");
+        return "{'message': 'success'}";
     }
 
     public String stats(spark.Request request, spark.Response response) {
@@ -51,9 +59,11 @@ public class Server {
 
         response.header("Content-Type", "application/json");
         Map<String, Integer> mostUsed = DatabaseController.getMostUsed(start, end);
+
         List<StatsItem> mostUsedList = new ArrayList<>();
         for(String name: mostUsed.keySet()) {
-            mostUsedList.add(new StatsItem(name, mostUsed.get(name), true));
+            boolean focused = FocusKeeper.focusController.checkDistracting(name);
+            mostUsedList.add(new StatsItem(name, mostUsed.get(name), focused));
         }
 
         return new Gson().toJson(mostUsedList);

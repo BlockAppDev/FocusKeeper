@@ -2,7 +2,6 @@ package com.focuskeeper;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import jdk.nashorn.internal.ir.Block;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,7 +15,7 @@ import java.util.*;
 public class FocusController {
     FocusSettings settings = FocusSettings.load();
 
-    public boolean shouldBlock(String url) {
+    public HashSet<String> getAllBlockItems() {
         HashSet<BlockList> activeLists = checkListsToBlock();
         HashSet<String> urls = new HashSet<>();
 
@@ -24,7 +23,33 @@ public class FocusController {
             urls.addAll(list.items);
         }
 
-        return urls.contains(url);
+        return urls;
+    }
+
+    public boolean shouldBlock(String url) {
+        HashSet<String> allUrls = getAllBlockItems();
+        return allUrls.contains(url);
+    }
+
+    public HashMap<String, Boolean> checkDistracting(List<String> items) {
+        HashMap<String, Boolean> retItems = new HashMap<>();
+        HashSet<String> allDistractingItems = new HashSet<>();
+        for(BlockList list: settings.blockLists.values()) {
+            allDistractingItems.addAll(list.items);
+        }
+
+        for(String item: items) {
+            retItems.put(item, !allDistractingItems.contains(item));
+        }
+
+        return retItems;
+    }
+
+    public boolean checkDistracting(String item) {
+        ArrayList<String> items = new ArrayList<>();
+        items.add(item);
+        HashMap<String, Boolean> result = checkDistracting(items);
+        return result.get(item);
     }
 
     public HashSet<BlockList> checkListsToBlock() {
@@ -98,15 +123,11 @@ class FocusSettings {
         settings.schedule = new BlockSchedule();
         settings.schedule.days = new HashMap<>();
 
-        BlockList distracting = new BlockList("Distracting", true, new HashSet<>());
-        List<String> distractingSites = null;
-        try {
-            distractingSites = Files.readAllLines(Paths.get("lib/distracting.txt"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        distracting.items.addAll(distractingSites);
+        BlockList distracting = loadList("Distracting", true,"lib/distracting_sites.txt");
         settings.blockLists.put("Distracting", distracting);
+
+        BlockList apps = loadList("Apps", false,"lib/distracting_apps.txt");
+        settings.blockLists.put("Apps", apps);
 
         for(int weekday = 0; weekday < 7; weekday++) {
             settings.schedule.days.put(Weekday.values()[weekday], new ArrayList<>());
@@ -117,6 +138,19 @@ class FocusSettings {
         settings.schedule.days.get(Weekday.MONDAY).add(new ScheduledBlock(0, 1440, dayLists));
 
         return settings;
+    }
+
+    public static BlockList loadList(String listName, boolean active, String listFileName) {
+        BlockList distracting = new BlockList(listName, active, new HashSet<>());
+        List<String> distractingSites = null;
+        try {
+            distractingSites = Files.readAllLines(Paths.get(listFileName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        distracting.items.addAll(distractingSites);
+
+        return distracting;
     }
 
     public static FocusSettings load() {

@@ -225,7 +225,7 @@ class Home extends Component {
               opacity: this.state.chart_type === "bar" ? 1.0 : null}}></i>
         </div>
         <div id="date-selector" className="gtext">
-          <span>Today</span>
+          <span style={{textDecoration: "underline"}}>Today</span>
           <span>Past Week</span>
           <span>Custom</span>
         </div>
