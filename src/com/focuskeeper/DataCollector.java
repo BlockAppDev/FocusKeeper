@@ -3,7 +3,6 @@ package com.focuskeeper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.regex.Pattern;
 
 public class DataCollector {
     String daemonPath;
@@ -43,7 +42,11 @@ public class DataCollector {
     
     public void processDaemonLine(String line) {
         line = line.trim();
+        String[] split_line = line.split(": ");
+        int seconds = Integer.parseInt(split_line[0]);
+        String app_name = split_line[1];
 
-        FocusKeeper.logger.info(line);
+        DatabaseController.addURLUsage(seconds, app_name);
+        System.out.println(DatabaseController.getMostUsed("2019/05/28", "2019/05/28"));
     }
 }

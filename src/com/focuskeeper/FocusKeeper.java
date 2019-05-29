@@ -37,6 +37,7 @@ public class FocusKeeper extends Application {
     Stage stage;
     static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     BlockController<String> blockController;
+    static FocusController focusController;
     long lastFocusChange = 0;
     static OS os = Util.getPlatform();
     
@@ -161,6 +162,11 @@ public class FocusKeeper extends Application {
 
     public static void main(String[] args) {
         FocusKeeper focuskeeper = new FocusKeeper();
+
+        DatabaseController.connect();
+
+        FocusKeeper.focusController = new FocusController();
+
         /*focuskeeper.blockController = new HostFileBlocker();*/
         focuskeeper.server = new Server();
         try {
