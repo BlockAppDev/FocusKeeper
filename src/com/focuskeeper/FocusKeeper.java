@@ -180,10 +180,10 @@ public class FocusKeeper extends Application {
         dataCollector.startAsync();
 
         // Launch GUI
-        FocusKeeper.launch(args);
+        // FocusKeeper.launch(args);
 
-        focuskeeper.server.stopServer();
+        // focuskeeper.server.stopServer();
         
-        System.exit(0); // Make sure all threads terminate
+        // System.exit(0); // Make sure all threads terminate
     }
 }

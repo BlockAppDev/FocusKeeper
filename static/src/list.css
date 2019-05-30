@@ -1,0 +1,38 @@
+.list-container {
+    overflow: scroll;
+}
+
+* {
+    font-family: "Inter var";
+}
+
+.list-item {
+    border-radius: 5px;
+    padding: 3px 3px 3px 3px;
+    margin-bottom: 5px;
+}
+
+.list-icon {
+    float: right;
+    padding-top: 3px;
+    padding-right: 5px;
+    cursor: pointer;
+}
+
+.active-icon {
+
+}
+
+.active-icon :hover {
+    color: red;
+    opacity: 0.5;
+}
+
+.inactive-icon {
+    margin-right: 3px;
+    margin-top: 1px;
+}
+
+::-webkit-scrollbar { 
+    display: none; 
+}

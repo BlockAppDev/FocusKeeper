@@ -15,6 +15,7 @@ public class Server {
     static final int PORT = 8000;
     static final int MAX_THREADS = 3;
     static final int TIMEOUT = 3000;
+    static final String successResponse = "{\"message\": \"success\"}";
 
     public static String getAddr() {
         return "http://localhost:" + PORT;
@@ -41,6 +42,23 @@ public class Server {
         path("/stats", () -> get("", this::stats));
 
         path("/blocked", () -> get("", this::blocked));
+
+        path("/settings", () -> get("", (request, response) -> {
+            response.header("Content-Type", "application/json");
+            return new Gson().toJson(FocusKeeper.focusController.settings);
+        }));
+
+        get("/settings", (request, response) -> {
+            response.header("Content-Type", "application/json");
+            return new Gson().toJson(FocusKeeper.focusController.settings);
+        });
+
+        post("/settings", (request, response) -> {
+            FocusSettings newSettings = new Gson().fromJson(request.body(), FocusSettings.class);
+            FocusKeeper.focusController.settings = newSettings;
+            response.header("Content-Type", "application/json");
+            return successResponse;
+        });
     }
 
     public String data(spark.Request request, spark.Response response) {
@@ -50,7 +68,7 @@ public class Server {
         DatabaseController.addURLUsage(intSeconds, host);
         DatabaseController.addURLUsage(-intSeconds, "chrome");
         response.header("Content-Type", "application/json");
-        return "{'message': 'success'}";
+        return successResponse;
     }
 
     public String stats(spark.Request request, spark.Response response) {

@@ -52,6 +52,9 @@ class Home extends Component {
 
     window.setInterval(function() {
       let elem = document.elementFromPoint(mouse.x, mouse.y);
+      if(!elem) {
+        return;
+      }
       if(elem.tagName !== "rect" && elem.tagName !== "path" && this.state.hover_item != null) {
         this.setState({hover_item: null});
       }
@@ -67,7 +70,7 @@ class Home extends Component {
   }
 
 	handleOnClick = () => {
-    let path = '/NewBlockList';
+    let path = '/settings';
     this.props.history.push(path);
   }
 
@@ -306,6 +309,9 @@ function secondsToHours(seconds) {
   }
   if(minutes > 0) {
     text += minutes + "m";
+  }
+  if(text.length === 0) {
+    text = "0m";
   }
 
   return text;
