@@ -96,7 +96,7 @@ class Settings extends Component {
                     active: true,
                     day: day,
                     onRemove: () => {
-                        this.state.settings.schedule.days[day].pop(i);
+                        this.state.settings.schedule.days[day].splice(i, 1);
                         this.loadSettings();
                     }
                 })
