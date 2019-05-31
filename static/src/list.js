@@ -35,7 +35,7 @@ class ItemList extends Component {
             }
 
             items.push(
-            <div className="list-item" style={{backgroundColor: bgcolor}}>
+            <div className="list-item" style={{backgroundColor: bgcolor}} key={i}>
                 <span style={{paddingLeft: "5px"}}>{item.name}</span>
                 <i title="Edit"
                    className="far fa-edit list-icon"

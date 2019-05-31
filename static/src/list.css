@@ -1,5 +1,6 @@
 .list-container {
     overflow: scroll;
+    -webkit-overflow-scrolling: auto;
 }
 
 * {
