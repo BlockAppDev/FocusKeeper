@@ -129,6 +129,8 @@ class FocusSettings {
         BlockList apps = loadList("Apps", false,"lib/distracting_apps.txt");
         settings.blockLists.put("Apps", apps);
 
+        settings.blockLists.put("Work", new BlockList("Work", false, new HashSet<>()));
+
         for(int weekday = 0; weekday < 7; weekday++) {
             settings.schedule.days.put(Weekday.values()[weekday], new ArrayList<>());
         }
@@ -136,6 +138,8 @@ class FocusSettings {
         HashSet<String> dayLists = new HashSet<>();
         dayLists.add("Distracting");
         settings.schedule.days.get(Weekday.MONDAY).add(new ScheduledBlock(0, 1440, dayLists));
+        settings.schedule.days.get(Weekday.MONDAY).add(new ScheduledBlock(45, 900, dayLists));
+        settings.schedule.days.get(Weekday.MONDAY).add(new ScheduledBlock(1000, 1100, dayLists));
 
         return settings;
     }
@@ -156,7 +160,7 @@ class FocusSettings {
     public static FocusSettings load() {
         Path path = Paths.get(fileName);
         boolean exists = Files.exists(path);
-        if(!exists) {
+        if(!exists || true) {
             FocusSettings newSettings = getDefault();
             save(newSettings);
             return newSettings;
