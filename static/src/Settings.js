@@ -61,9 +61,11 @@ class Settings extends Component {
             this.state.settings = json;
         }
 
+        // Check for passed in new list
         if(this.props.location.new_list) {
             let new_list = this.props.location.new_list;
             new_list.active = true;
+            new_list.items = new_list.items.map((e) => e.name);
             json.blockLists[new_list.name] = new_list;
             this.props.location.new_list = null;
             console.log(new_list);
