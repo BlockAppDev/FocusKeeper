@@ -55,3 +55,29 @@ body {
     border: 1px solid #4A90E2;
     overflow: hidden;
 }
+
+.outline {
+    width: 350px;
+    height: 450px;
+    background-color: white;
+    border: 1px solid #4A90E2;
+    overflow: hidden;
+}
+
+.time-select {
+    padding: 3px 3px 3px 3px;
+    width: 115px;
+    max-height: 60px;
+}
+
+.weekday-block {
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    margin: 3px 7px 7px 3px;
+    border-radius: 3px;
+    text-align: center;
+    padding-top: 2px;
+    user-select: none;
+    cursor: pointer;
+}
