@@ -1,4 +1,4 @@
-package com.focuskeeper.testDB;
+package com.focuskeeper.testdb;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

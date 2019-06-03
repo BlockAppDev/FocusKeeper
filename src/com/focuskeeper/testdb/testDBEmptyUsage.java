@@ -1,4 +1,4 @@
-package com.focuskeeper.testDB;
+package com.focuskeeper.testdb;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -8,21 +8,21 @@ public class testDBEmptyUsage {
 
 	@Test
 	public void testEmptyTotalTime() {
+		DatabaseController.restartDB();
 		DatabaseController.connect();
 		DatabaseController.createTable();
 		int output = DatabaseController.getTotalTimeToday();
         //Test size is 0
 		assertEquals(output, 0, 0);
-        DatabaseController.restartDB();
 	}
 	
 	@Test
 	public void testEmptyTotalFocusTime() {
+		DatabaseController.restartDB();
 		DatabaseController.connect();
 		DatabaseController.createTable();
 		int output = DatabaseController.getTotalFocusTimeToday();
         //Test size is 0
 		assertEquals(output, 0, 0);
-        DatabaseController.restartDB();
 	}
 }

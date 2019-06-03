@@ -3,20 +3,23 @@ package com.focuskeeper;
 import static spark.Spark.*;
 
 import com.google.gson.Gson;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import spark.Filter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class Server {
     static final int PORT = 8000;
     static final int MAX_THREADS = 3;
     static final int TIMEOUT = 3000;
-    static final String successResponse = "{\"message\": \"success\"}";
-
+    static final String SUCCESS_RESPONSE = "{\"message\": \"success\"}";
+    static final String SETTINGS = "/settings";
+    static final String CONTENT_TYPE = "Content-Type";
+    static final String APPLICATION_JSON = "application/json";
+    
     public static String getAddr() {
         return "http://localhost:" + PORT;
     }
@@ -36,28 +39,28 @@ public class Server {
         path("/data", () -> put("", this::data));
 
         path("/focused", () -> get("", (request, response) -> {
-            return "";
+        	return "";
         }));
 
         path("/stats", () -> get("", this::stats));
 
         path("/blocked", () -> get("", this::blocked));
 
-        path("/settings", () -> get("", (request, response) -> {
-            response.header("Content-Type", "application/json");
+        path(SETTINGS, () -> get("", (request, response) -> {
+            response.header(CONTENT_TYPE, APPLICATION_JSON);
             return new Gson().toJson(FocusKeeper.focusController.settings);
         }));
 
-        get("/settings", (request, response) -> {
-            response.header("Content-Type", "application/json");
+        get(SETTINGS, (request, response) -> {
+            response.header(CONTENT_TYPE, APPLICATION_JSON);
             return new Gson().toJson(FocusKeeper.focusController.settings);
         });
 
-        post("/settings", (request, response) -> {
+        post(SETTINGS, (request, response) -> {
             FocusSettings newSettings = new Gson().fromJson(request.body(), FocusSettings.class);
             FocusKeeper.focusController.settings = newSettings;
-            response.header("Content-Type", "application/json");
-            return successResponse;
+            response.header(CONTENT_TYPE, APPLICATION_JSON);
+            return SUCCESS_RESPONSE;
         });
     }
 
@@ -67,21 +70,24 @@ public class Server {
         int intSeconds = Integer.parseInt(seconds);
         DatabaseController.addURLUsage(intSeconds, host);
         DatabaseController.addURLUsage(-intSeconds, "chrome");
-        response.header("Content-Type", "application/json");
-        return successResponse;
+        response.header(CONTENT_TYPE, APPLICATION_JSON);
+        return SUCCESS_RESPONSE;
     }
 
     public String stats(spark.Request request, spark.Response response) {
         String start = request.queryMap().get("start").value();
         String end = request.queryMap().get("end").value();
 
-        response.header("Content-Type", "application/json");
+        response.header(CONTENT_TYPE, APPLICATION_JSON);
         Map<String, Integer> mostUsed = DatabaseController.getMostUsed(start, end);
 
         List<StatsItem> mostUsedList = new ArrayList<>();
-        for(String name: mostUsed.keySet()) {
+        
+        for(Entry<String, Integer> entry : mostUsed.entrySet()){
+            String name = entry.getKey();
+            int value = entry.getValue();
             boolean focused = FocusKeeper.focusController.checkDistracting(name);
-            mostUsedList.add(new StatsItem(name, mostUsed.get(name), focused));
+            mostUsedList.add(new StatsItem(name, value, focused));
         }
 
         return new Gson().toJson(mostUsedList);
@@ -90,7 +96,7 @@ public class Server {
     public String blocked(spark.Request request, spark.Response response) {
         String submittedUrl = request.queryMap().get("url").value();
         boolean shouldBlock = FocusKeeper.focusController.shouldBlock(submittedUrl);
-        response.header("Content-Type", "application/json");
+        response.header(CONTENT_TYPE, APPLICATION_JSON);
 
         HashMap<String, Boolean> responseJson = new HashMap<>();
         responseJson.put("blocked", shouldBlock);

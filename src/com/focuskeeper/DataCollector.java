@@ -42,11 +42,11 @@ public class DataCollector {
     
     public void processDaemonLine(String line) {
         line = line.trim();
-        String[] split_line = line.split(": ");
-        int seconds = Integer.parseInt(split_line[0]);
-        String app_name = split_line[1];
+        String[] splitLine = line.split(": ");
+        int seconds = Integer.parseInt(splitLine[0]);
+        String appName = splitLine[1];
 
-        DatabaseController.addURLUsage(seconds, app_name);
+        DatabaseController.addURLUsage(seconds, appName);
         System.out.println(DatabaseController.getMostUsed("2019/05/28", "2019/05/28"));
     }
 }

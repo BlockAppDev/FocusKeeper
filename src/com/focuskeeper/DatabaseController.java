@@ -3,24 +3,18 @@ package com.focuskeeper;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -34,9 +28,8 @@ public class DatabaseController {
     private static String elapsed = "elapsedTime";
     public static final String DB_NAME = "FocusKeeper.db";
 
-
-    public static void connect() {
-        boolean db_exists = Files.exists(Paths.get(DB_NAME));
+    public static void connect() {        
+        boolean dbExists = Paths.get(DB_NAME).toFile().exists();
 
         try {
             getConnection();
@@ -46,7 +39,7 @@ public class DatabaseController {
             FocusKeeper.logger.error(e.getMessage());
         }
 
-        if (!db_exists) {
+        if (!dbExists) {
             createTable();
         }
     }
@@ -109,9 +102,14 @@ public class DatabaseController {
 
     //restartDB()			 :  wipe and delete all database tables (cannot be undone)
     public static void restartDB() {
-        File file = new File(Paths.get(DB_NAME).toString());
-        file.delete();  
+    	Path path = Paths.get(DB_NAME);
+		try {
+			Files.delete(path);
+		} catch (IOException e) {
+			FocusKeeper.logger.error("Error: Cannot delete DB because it does not exist");
+		}
         tables = false;
+ 
     }
 
     //addList()				 :  adds new URLS and list when new blocklist is created

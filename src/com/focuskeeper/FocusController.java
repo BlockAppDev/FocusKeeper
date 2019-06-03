@@ -15,8 +15,8 @@ import java.util.*;
 public class FocusController {
     FocusSettings settings = FocusSettings.load();
 
-    public HashSet<String> getAllBlockItems() {
-        HashSet<BlockList> activeLists = checkListsToBlock();
+    public Set<String> getAllBlockItems() {
+        Set<BlockList> activeLists = checkListsToBlock();
         HashSet<String> urls = new HashSet<>();
 
         for(BlockList list: activeLists) {
@@ -27,11 +27,11 @@ public class FocusController {
     }
 
     public boolean shouldBlock(String url) {
-        HashSet<String> allUrls = getAllBlockItems();
+        Set<String> allUrls = getAllBlockItems();
         return allUrls.contains(url);
     }
 
-    public HashMap<String, Boolean> checkDistracting(List<String> items) {
+    public Map<String, Boolean> checkDistracting(List<String> items) {
         HashMap<String, Boolean> retItems = new HashMap<>();
         HashSet<String> allDistractingItems = new HashSet<>();
         for(BlockList list: settings.blockLists.values()) {
@@ -48,11 +48,11 @@ public class FocusController {
     public boolean checkDistracting(String item) {
         ArrayList<String> items = new ArrayList<>();
         items.add(item);
-        HashMap<String, Boolean> result = checkDistracting(items);
+        Map<String, Boolean> result = checkDistracting(items);
         return result.get(item);
     }
 
-    public HashSet<BlockList> checkListsToBlock() {
+    public Set<BlockList> checkListsToBlock() {
         HashSet<BlockList> listsToBlock = new HashSet<>();
 
         if(settings.manualFocus) {
@@ -104,18 +104,17 @@ public class FocusController {
         c.set(Calendar.MILLISECOND, 0);
         long passed = now - c.getTimeInMillis();
         long secondsPassed = passed / 1000;
-        long minutesPassed = secondsPassed / 60;
-
-        return minutesPassed;
+        return secondsPassed / 60;
     }
 }
 
 class FocusSettings {
-    public static final String fileName = "settings.json";
+    public static final String FILENAME = "settings.json";
     String version = "1.0.0";
     boolean manualFocus;
     HashMap<String, BlockList> blockLists;
     BlockSchedule schedule;
+    public static final String DISTRACTING = "Distracting";
 
     public static FocusSettings getDefault() {
         FocusSettings settings = new FocusSettings();
@@ -123,8 +122,8 @@ class FocusSettings {
         settings.schedule = new BlockSchedule();
         settings.schedule.days = new HashMap<>();
 
-        BlockList distracting = loadList("Distracting", true,"lib/distracting_sites.txt");
-        settings.blockLists.put("Distracting", distracting);
+        BlockList distracting = loadList(DISTRACTING, true,"lib/distracting_sites.txt");
+        settings.blockLists.put(DISTRACTING, distracting);
 
         BlockList apps = loadList("Apps", false,"lib/distracting_apps.txt");
         settings.blockLists.put("Apps", apps);
@@ -136,7 +135,7 @@ class FocusSettings {
         }
 
         HashSet<String> dayLists = new HashSet<>();
-        dayLists.add("Distracting");
+        dayLists.add(DISTRACTING);
         settings.schedule.days.get(Weekday.MONDAY).add(new ScheduledBlock(0, 1440, dayLists));
         settings.schedule.days.get(Weekday.MONDAY).add(new ScheduledBlock(45, 900, dayLists));
         settings.schedule.days.get(Weekday.MONDAY).add(new ScheduledBlock(1000, 1100, dayLists));
@@ -158,9 +157,9 @@ class FocusSettings {
     }
 
     public static FocusSettings load() {
-        Path path = Paths.get(fileName);
-        boolean exists = Files.exists(path);
-        if(!exists || true) {
+        Path path = Paths.get(FILENAME);
+        boolean exists = path.toFile().exists();
+        if(!exists) {
             FocusSettings newSettings = getDefault();
             save(newSettings);
             return newSettings;
@@ -173,17 +172,17 @@ class FocusSettings {
             e.printStackTrace();
         }
 
-        Gson settings_json = new Gson();
-        FocusSettings loaded_settings = settings_json.fromJson(new String(fileBytes, StandardCharsets.UTF_8), FocusSettings.class);
-        return loaded_settings;
+        Gson settingsJson = new Gson();
+        FocusSettings loadedSettings = settingsJson.fromJson(new String(fileBytes, StandardCharsets.UTF_8), FocusSettings.class);
+        return loadedSettings;
     }
 
     public static void save(FocusSettings settings) {
-        Gson settings_json = new GsonBuilder().setPrettyPrinting().create();
-        String json_to_save = settings_json.toJson(settings);
+        Gson settingsJson = new GsonBuilder().setPrettyPrinting().create();
+        String jsonToSave = settingsJson.toJson(settings);
 
-        try (PrintWriter outFile = new PrintWriter(fileName)) {
-            outFile.println(json_to_save);
+        try (PrintWriter outFile = new PrintWriter(FILENAME)) {
+            outFile.println(jsonToSave);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -193,9 +192,9 @@ class FocusSettings {
 class BlockList {
     String name;
     boolean active;
-    HashSet<String> items;
+    Set<String> items;
 
-    public BlockList(String name, boolean active, HashSet<String> items) {
+    public BlockList(String name, boolean active, Set<String> items) {
         this.name = name;
         this.active = active;
         this.items = items;
@@ -210,9 +209,9 @@ class ScheduledBlock {
     // Start and end are both in minutes since the start of the day
     int start;
     int end;
-    HashSet<String> lists;
+    Set<String> lists;
 
-    public ScheduledBlock(int start, int end, HashSet<String> lists) {
+    public ScheduledBlock(int start, int end, Set<String> lists) {
         this.start = start;
         this.end = end;
         this.lists = lists;

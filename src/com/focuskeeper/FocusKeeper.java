@@ -69,6 +69,8 @@ public class FocusKeeper extends Application {
         
         FocusKeeper fk = this;
         trayIcon.addMouseListener(new MouseAdapter() {
+      
+        	@Override
             public void mouseClicked(MouseEvent event) {
                 if(event.getButton() != 1) {
                     // Ignore anything other than a left click
@@ -167,7 +169,6 @@ public class FocusKeeper extends Application {
 
         FocusKeeper.focusController = new FocusController();
 
-        /*focuskeeper.blockController = new HostFileBlocker();*/
         focuskeeper.server = new Server();
         try {
             focuskeeper.server.run();
@@ -180,9 +181,9 @@ public class FocusKeeper extends Application {
         dataCollector.startAsync();
 
         // Launch GUI
-        // FocusKeeper.launch(args);
+        // FocusKeeper.launch(args); // Launch
 
-        // focuskeeper.server.stopServer();
+        // focuskeeper.server.stopServer();  // Stop
         
         // System.exit(0); // Make sure all threads terminate
     }

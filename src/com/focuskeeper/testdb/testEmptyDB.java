@@ -1,4 +1,4 @@
-package com.focuskeeper.testDB;
+package com.focuskeeper.testdb;
 
 import static org.junit.Assert.*;
 import java.util.Map;
@@ -9,23 +9,23 @@ import com.focuskeeper.DatabaseController;
 
 public class testEmptyDB {
 	@Test
-	public void testEmptyMostUsed() {
+	public void testEmptyMostUsed() {        
+		DatabaseController.restartDB();
 		DatabaseController.connect();
 		DatabaseController.createTable();
 		Map<String, Integer> output = DatabaseController.getMostUsed("2019/05/31", "2019/05/31");
         //Test size is 0
         assertThat(output.size(), is(0));
-        DatabaseController.restartDB();
 	}
 	
 	@Test
 	public void testEmptyRecentlyUsed() {
-		DatabaseController.connect();
+        DatabaseController.restartDB();
+        DatabaseController.connect();
 		DatabaseController.createTable();
 		Map<String, Integer> output = DatabaseController.getRecentlyUsed();
         //Test size is 0
 		assertThat(output.size(), is(0));
-        DatabaseController.restartDB();
 	}
 	
 	

@@ -1,4 +1,4 @@
-package com.focuskeeper.testDB;
+package com.focuskeeper.testdb;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
