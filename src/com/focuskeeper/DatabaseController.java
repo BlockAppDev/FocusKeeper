@@ -16,6 +16,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -24,18 +28,11 @@ import java.security.NoSuchAlgorithmException;
 
 public class DatabaseController {
     private static Connection con;
-    private static boolean hashTables;
-    private static String dateFormat = "yyy/MM/dd";
+    private static boolean tables;
+    public static String dateFormat = "yyy/MM/dd";
     static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     private static String elapsed = "elapsedTime";
     public static final String DB_NAME = "FocusKeeper.db";
-
-
-    public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        connect();
-        addURLUsage(34, "www.facebook.com");
-        addURLUsage(555, "slack");
-    }
 
 
     public static void connect() {
@@ -53,7 +50,6 @@ public class DatabaseController {
             createTable();
         }
     }
-
 
     //getconnection()  		 :  connects to database*
     private static void getConnection() throws ClassNotFoundException, SQLException {
@@ -73,7 +69,7 @@ public class DatabaseController {
     //createTable()			 :  creates all database tables with correct columns (only needs to be called if tables don't exist)
     public static void createTable() {
         //creates our three tables: URLs, URLSettings, WebsiteUsage
-        if (!hashTables) {
+        if (!tables) {
             try (Statement state = con.createStatement()) {
                 String createURLS = "CREATE TABLE IF NOT EXISTS Items (\n"
                         + " ID INTEGER PRIMARY KEY AUTOINCREMENT, \n"
@@ -108,33 +104,14 @@ public class DatabaseController {
                 FocusKeeper.logger.error("%s", e);
             }
         }
-        hashTables = true;
+        tables = true;
     }
 
     //restartDB()			 :  wipe and delete all database tables (cannot be undone)
     public static void restartDB() {
-        if (con == null) {
-            try {
-                getConnection();
-            } catch (ClassNotFoundException | SQLException e1) {
-                FocusKeeper.logger.error("%s", e1);
-            }
-        }
-        try (Statement state = con.createStatement()) {
-            String sql = "DROP TABLE Items;";
-            state.executeUpdate(sql);
-
-            sql = "DROP TABLE ItemSettings;";
-            state.executeUpdate(sql);
-
-            sql = "DROP TABLE WebsiteUsage;";
-            state.executeUpdate(sql);
-
-            sql = "DROP TABLE BlockLists;";
-            state.executeUpdate(sql);
-        } catch (SQLException e) {
-            FocusKeeper.logger.error("%s", e);
-        }
+        File file = new File(Paths.get(DB_NAME).toString());
+        file.delete();  
+        tables = false;
     }
 
     //addList()				 :  adds new URLS and list when new blocklist is created
@@ -333,7 +310,7 @@ public class DatabaseController {
         } catch (SQLException e) {
             FocusKeeper.logger.error("%s", e);
         }
-
+       
         return mostUsed;
     }
 
@@ -345,7 +322,7 @@ public class DatabaseController {
 
         //("www.instagram.com", 45)
         LinkedHashMap<String, Integer> recents = new LinkedHashMap<>();
-        String getRecent = "SELECT u.Item AS item, w.elapsedTime as elapsed"
+        String getRecent = "SELECT u.Item AS item, w.elapsedTime AS elapsed"
                 + " FROM WebsiteUsage AS w"
                 + " LEFT JOIN Items as u on w.ID = u.ID"
                 + " ORDER BY elapsed DESC LIMIT 5;";
