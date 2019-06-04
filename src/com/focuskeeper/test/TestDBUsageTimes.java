@@ -1,10 +1,10 @@
-package com.focuskeeper.testdb;
+package com.focuskeeper.test;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import com.focuskeeper.DatabaseController;
 
-public class testDBUsageTimes {
+public class TestDBUsageTimes {
 	
 	@Test
 	public void testGetTotalTimeToday() {

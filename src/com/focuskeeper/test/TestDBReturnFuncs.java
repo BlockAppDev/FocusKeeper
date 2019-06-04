@@ -1,4 +1,4 @@
-package com.focuskeeper.testdb;
+package com.focuskeeper.test;
 
 import static org.junit.Assert.*;
 
@@ -11,7 +11,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Test;
 import com.focuskeeper.DatabaseController;
 
-public class testDBReturnFuncs {
+public class TestDBReturnFuncs {
+	static final String URL = "www.facebook.com";
 
 	@Test
 	public void testGetMostUsed() {
@@ -19,10 +20,10 @@ public class testDBReturnFuncs {
         String date = DateTimeFormatter.ofPattern(DatabaseController.dateFormat).format(localDate);		DatabaseController.restartDB();
 		DatabaseController.connect();
 		DatabaseController.createTable();
-		DatabaseController.addURLUsage(33, "www.facebook.com");
+		DatabaseController.addURLUsage(33, URL);
 		Map<String, Integer> output = DatabaseController.getMostUsed(date, date);
         Map<String, Integer> expected = new LinkedHashMap<>();
-        expected.put("www.facebook.com", 33);
+        expected.put(URL, 33);
 		//Test equal, ignore order
         assertThat(output, is(expected));
 	}
@@ -32,10 +33,10 @@ public class testDBReturnFuncs {
 		DatabaseController.restartDB();
 		DatabaseController.connect();
 		DatabaseController.createTable();
-		DatabaseController.addURLUsage(33, "www.facebook.com");
+		DatabaseController.addURLUsage(33, URL);
 		Map<String, Integer> output = DatabaseController.getRecentlyUsed();
         Map<String, Integer> expected = new LinkedHashMap<>();
-        expected.put("www.facebook.com", 33);
+        expected.put(URL, 33);
 		//Test equal, ignore order
         assertThat(output, is(expected));
 	}

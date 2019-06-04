@@ -1,4 +1,4 @@
-package com.focuskeeper.testdb;
+package com.focuskeeper.test;
 
 import static org.junit.Assert.*;
 import java.util.Map;
@@ -7,7 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Test;
 import com.focuskeeper.DatabaseController;
 
-public class testEmptyDB {
+public class TestEmptyDB {
 	@Test
 	public void testEmptyMostUsed() {        
 		DatabaseController.restartDB();

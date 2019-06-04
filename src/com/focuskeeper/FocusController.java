@@ -173,8 +173,7 @@ class FocusSettings {
         }
 
         Gson settingsJson = new Gson();
-        FocusSettings loadedSettings = settingsJson.fromJson(new String(fileBytes, StandardCharsets.UTF_8), FocusSettings.class);
-        return loadedSettings;
+        return settingsJson.fromJson(new String(fileBytes, StandardCharsets.UTF_8), FocusSettings.class);
     }
 
     public static void save(FocusSettings settings) {

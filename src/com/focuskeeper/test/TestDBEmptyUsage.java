@@ -1,14 +1,13 @@
-package com.focuskeeper.testdb;
+package com.focuskeeper.test;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
 import com.focuskeeper.DatabaseController;
 
-public class testDBEmptyUsage {
+public class TestDBEmptyUsage {
 
 	@Test
 	public void testEmptyTotalTime() {
-		DatabaseController.restartDB();
 		DatabaseController.connect();
 		DatabaseController.createTable();
 		int output = DatabaseController.getTotalTimeToday();
