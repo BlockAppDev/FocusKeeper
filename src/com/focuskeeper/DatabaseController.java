@@ -23,9 +23,9 @@ import java.security.NoSuchAlgorithmException;
 public class DatabaseController {
     private static Connection con;
     private static boolean tables;
-    public static String dateFormat = "yyy/MM/dd";
+    public static final String DATE_FORMAT = "yyy/MM/dd";
     static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-    private static String elapsed = "elapsedTime";
+    private static final String ELAPSED = "elapsedTime";
     public static final String DB_NAME = "FocusKeeper.db";
 
     public static void connect() {        
@@ -34,7 +34,7 @@ public class DatabaseController {
         try {
             getConnection();
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            FocusKeeper.logger.error(e.getMessage());
         } catch (SQLException e) {
             FocusKeeper.logger.error(e.getMessage());
         }
@@ -211,7 +211,7 @@ public class DatabaseController {
         int currentTime = 0;
         int id = 0;
         LocalDate localDate = LocalDate.now();
-        String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
+        String date = DateTimeFormatter.ofPattern(DATE_FORMAT).format(localDate);
         String getID = "SELECT ID FROM Items WHERE Item = ?;";
 
         try (PreparedStatement prep = con.prepareStatement(getID)) {
@@ -233,7 +233,7 @@ public class DatabaseController {
             //does this work??
             try (ResultSet usage = prep2.executeQuery()) {
                 if (usage.next()) {
-                    currentTime = usage.getInt(elapsed);
+                    currentTime = usage.getInt(ELAPSED);
                 } else currentTime = 0;
                 currentTime += elapsedTime;
             }
@@ -275,19 +275,19 @@ public class DatabaseController {
         //queries to get sites with highest elapsedTime in WebsiteUsage
 
         LinkedHashMap<String, Integer> mostUsed = new LinkedHashMap<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
         StringBuilder datesForQuery = new StringBuilder("(");
 
         //convert String to LocalDate
         LocalDate newStart = LocalDate.parse(start, formatter);
         LocalDate newEnd = LocalDate.parse(end, formatter);
 
-        String formattedDate = DateTimeFormatter.ofPattern(dateFormat).format(newStart);
+        String formattedDate = DateTimeFormatter.ofPattern(DATE_FORMAT).format(newStart);
         datesForQuery.append("'" + formattedDate + "'");
         if (newStart.isBefore(newEnd)) {
             newStart = newStart.plusDays(1);
             for (LocalDate date = newStart; ((date.isBefore(newEnd)) || (date.isEqual(newEnd))); date = date.plusDays(1)) {
-                formattedDate = DateTimeFormatter.ofPattern(dateFormat).format(date);
+                formattedDate = DateTimeFormatter.ofPattern(DATE_FORMAT).format(date);
                 datesForQuery.append(", '" + formattedDate + "'");
             }
         }
@@ -343,13 +343,13 @@ public class DatabaseController {
     public static int getTotalTimeToday() {
         int totalTimeToday = 0;
         LocalDate localDate = LocalDate.now();
-        String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
+        String date = DateTimeFormatter.ofPattern(DATE_FORMAT).format(localDate);
         String get = "SELECT * FROM WebsiteUsage WHERE Date='" + date + "';";
 
         try (Statement state = con.createStatement();
              ResultSet rs = state.executeQuery(get)) {
             while (rs.next()) {
-                totalTimeToday += rs.getInt(elapsed);
+                totalTimeToday += rs.getInt(ELAPSED);
             }
         } catch (SQLException e) {
             FocusKeeper.logger.error("%s", e);
@@ -362,14 +362,14 @@ public class DatabaseController {
     public static int getTotalFocusTimeToday() {
         int totalTimeToday = 0;
         LocalDate localDate = LocalDate.now();
-        String date = DateTimeFormatter.ofPattern(dateFormat).format(localDate);
+        String date = DateTimeFormatter.ofPattern(DATE_FORMAT).format(localDate);
         String get = "SELECT * FROM WebsiteUsage WHERE Date = '" + date + "'"
                 + " AND ID IN (SELECT ID FROM ItemSettings WHERE BlockID = 1);";
 
         try (Statement state = con.createStatement();
              ResultSet rs = state.executeQuery(get)) {
             while (rs.next()) {
-                totalTimeToday += rs.getInt(elapsed);
+                totalTimeToday += rs.getInt(ELAPSED);
             }
         } catch (SQLException e) {
             FocusKeeper.logger.error("%s", e);

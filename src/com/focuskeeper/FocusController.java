@@ -149,7 +149,7 @@ class FocusSettings {
         try {
             distractingSites = Files.readAllLines(Paths.get(listFileName));
         } catch (IOException e) {
-            e.printStackTrace();
+            FocusKeeper.logger.error(e.getMessage());
         }
         distracting.items.addAll(distractingSites);
 
@@ -169,7 +169,7 @@ class FocusSettings {
         try {
             fileBytes = Files.readAllBytes(path);
         } catch (IOException e) {
-            e.printStackTrace();
+            FocusKeeper.logger.error(e.getMessage());
         }
 
         Gson settingsJson = new Gson();
@@ -183,7 +183,7 @@ class FocusSettings {
         try (PrintWriter outFile = new PrintWriter(FILENAME)) {
             outFile.println(jsonToSave);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            FocusKeeper.logger.error(e.getMessage());
         }
     }
 }

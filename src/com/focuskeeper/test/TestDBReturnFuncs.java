@@ -17,7 +17,8 @@ public class TestDBReturnFuncs {
 	@Test
 	public void testGetMostUsed() {
         LocalDate localDate = LocalDate.now();
-        String date = DateTimeFormatter.ofPattern(DatabaseController.dateFormat).format(localDate);		DatabaseController.restartDB();
+        String date = DateTimeFormatter.ofPattern(DatabaseController.DATE_FORMAT).format(localDate);		
+        DatabaseController.restartDB();
 		DatabaseController.connect();
 		DatabaseController.createTable();
 		DatabaseController.addURLUsage(33, URL);
