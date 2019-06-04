@@ -48,6 +48,5 @@ public class DataCollector {
         String appName = splitLine[1];
 
         DatabaseController.addURLUsage(seconds, appName);
-        System.out.println(DatabaseController.getMostUsed("2019/05/28", "2019/05/28"));
     }
 }
