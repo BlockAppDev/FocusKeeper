@@ -15,6 +15,7 @@ public class DataCollector {
     }
     
     public void startAsync() {
+        // Start the data collector asynchronously
         Thread thread = new Thread(this::start);
         thread.setDaemon(true);
         thread.start();

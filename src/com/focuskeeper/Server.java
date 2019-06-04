@@ -75,6 +75,7 @@ public class Server {
     }
 
     public String stats(spark.Request request, spark.Response response) {
+        // Return usage statistics
         String start = request.queryMap().get("start").value();
         String end = request.queryMap().get("end").value();
 
