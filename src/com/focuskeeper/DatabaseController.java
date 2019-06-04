@@ -377,4 +377,8 @@ public class DatabaseController {
 
         return totalTimeToday;
     }
+	
+   public static Connection getCon(){ 
+	   return con;
+   }
 }
