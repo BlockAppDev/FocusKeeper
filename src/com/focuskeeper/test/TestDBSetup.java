@@ -37,10 +37,7 @@ public class TestDBSetup {
 		DatabaseController.connect();
 		boolean result = getCon() != null;
 		DatabaseController.restartDB();
-		
-		assertEquals(true, result);	
-		
-		
+		assertEquals(true, result);			
 	}
 	
 	@Test

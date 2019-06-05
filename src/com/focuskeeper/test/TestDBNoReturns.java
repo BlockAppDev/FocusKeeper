@@ -13,9 +13,7 @@ import org.junit.Test;
 
 import com.focuskeeper.DatabaseController;
 
-public class TestDBNoReturns {
-
-	
+public class TestDBNoReturns {	
 	@Test
 	public void testRestartDB() {
 		
@@ -28,22 +26,6 @@ public class TestDBNoReturns {
 		
 		assertEquals(false, result);
 	}
-	
-	/*
-	 
-	SELECT CASE WHEN 
-	EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='albums')
-	AND EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='customers')
-	AND EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='artists')
-	THEN 'true' ELSE 'false' END AS result ;
-	 
-	 String check = "SELECT CASE WHEN"
-					+ " EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='Items')"
-					+ " AND EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='BlockLists')"
-					+ " AND EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='WebsiteUsage')"
-					+ " THEN 'true' ELSE 'false' END AS result;";
-	 
-	 */
 	
 	@Test
 	public void testAddList() throws SQLException {
@@ -66,4 +48,20 @@ public class TestDBNoReturns {
         
 		assertEquals(1,1);
 	}
+	
+	/*
+	 
+	SELECT CASE WHEN 
+	EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='albums')
+	AND EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='customers')
+	AND EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='artists')
+	THEN 'true' ELSE 'false' END AS result ;
+	 
+	 String check = "SELECT CASE WHEN"
+					+ " EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='Items')"
+					+ " AND EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='BlockLists')"
+					+ " AND EXISTS (SELECT name FROM sqlite_master WHERE type='table' AND name='WebsiteUsage')"
+					+ " THEN 'true' ELSE 'false' END AS result;";
+	 
+	 */
 }
