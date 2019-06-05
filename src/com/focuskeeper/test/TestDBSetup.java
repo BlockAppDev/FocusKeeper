@@ -30,9 +30,8 @@ public class TestDBSetup {
 		DatabaseController.createTable();
 		
 		String result = "";
-		try {
-		Statement state = DatabaseController.getCon().createStatement();
-        ResultSet rs = state.executeQuery(check);
+		try (Statement state = DatabaseController.getCon().createStatement();
+        ResultSet rs = state.executeQuery(check)){
         result = rs.getString("test_result");
 		} catch(Exception e) {
 			//error
