@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import org.junit.Test;
 import com.focuskeeper.DatabaseController;
@@ -33,13 +32,12 @@ public class TestDBNoReturns {
 		String[] sites = {"A", "B", "C"};
 		DatabaseController.addList("Testy", sites);
 		
-		String result = new String();
-		try {
-		Statement state = DatabaseController.getCon().createStatement();
-        ResultSet rs = state.executeQuery(check);
+		String result = "";
+		try (Statement state = DatabaseController.getCon().createStatement();
+        ResultSet rs = state.executeQuery(check)){
         result = rs.getString("test_result");
 		} catch (Exception e) {
-			System.out.println("the sql messed up, yikes");
+			//error
 		}
         DatabaseController.restartDB();
 		assertTrue(Boolean.parseBoolean(result));

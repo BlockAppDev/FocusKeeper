@@ -5,7 +5,6 @@ import org.junit.Test;
 import com.focuskeeper.DatabaseController;
 import static com.focuskeeper.DatabaseController.*;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 
 public class TestDBSetup {
@@ -30,13 +29,13 @@ public class TestDBSetup {
 		DatabaseController.connect();
 		DatabaseController.createTable();
 		
-		String result = new String();
+		String result = "";
 		try {
 		Statement state = DatabaseController.getCon().createStatement();
         ResultSet rs = state.executeQuery(check);
         result = rs.getString("test_result");
 		} catch(Exception e) {
-			System.out.println("the sql messed up, yikes");
+			//error
 		}
         
         DatabaseController.restartDB();
