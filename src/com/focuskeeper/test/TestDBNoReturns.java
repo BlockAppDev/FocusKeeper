@@ -20,7 +20,7 @@ public class TestDBNoReturns {
 		DatabaseController.createTable();
 		DatabaseController.restartDB();
 		Path path = Paths.get(DatabaseController.DB_NAME);
-		boolean result = Files.exists(path);
+		boolean result = path.toFile().exists();
 		assertEquals(false, result);
 	}
 	

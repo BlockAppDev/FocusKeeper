@@ -27,18 +27,16 @@ public class DatabaseController {
     static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     private static final String ELAPSED = "elapsedTime";
     public static final String DB_NAME = "FocusKeeper.db";
+    
 
     public static void connect() {        
         boolean dbExists = Paths.get(DB_NAME).toFile().exists();
 
         try {
             getConnection();
-        } catch (ClassNotFoundException e) {
-            FocusKeeper.logger.error(e.getMessage());
-        } catch (SQLException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             FocusKeeper.logger.error(e.getMessage());
         }
-
         if (!dbExists) {
             createTable();
         }
