@@ -23,7 +23,7 @@ public class TestControllerReturns {
 	@Test
 	public void testCheckDistracting() {
 		FocusController a = new FocusController();
-		List<String> b = new ArrayList<String>();
+		List<String> b = new ArrayList<>();
 		Map<String, Boolean> c = a.checkDistracting(b);
 		Map<String, Boolean> d = new HashMap<>();
 		assertEquals(c,d);
