@@ -101,7 +101,7 @@ public class DatabaseController {
     }
 
     //restartDB()			 :  wipe and delete all database tables (cannot be undone)
-    public static void restartDB() {
+    public static void restartDB(){
     	Path path = Paths.get(DB_NAME);
 		try {
 			Files.delete(path);
