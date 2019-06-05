@@ -27,7 +27,11 @@ public class DatabaseController {
     static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     private static final String ELAPSED = "elapsedTime";
     public static final String DB_NAME = "FocusKeeper.db";
-    
+
+    // Private constructor
+    private DatabaseController() {
+
+    }
 
     public static void connect() {        
         boolean dbExists = Paths.get(DB_NAME).toFile().exists();
