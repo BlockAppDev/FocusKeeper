@@ -5,6 +5,6 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ TestDBNoReturns.class, TestDBSetup.class })
-public class NoReturnFuncsSuiteDB {
+@SuiteClasses({ TestControllerReturns.class, TestControllerReturnsTwo.class })
+public class ControllerReturnsSuite {
 }
