@@ -1,33 +1,12 @@
 package com.focuskeeper.test;
 
 import static org.junit.Assert.*;
-import java.util.ArrayList;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.focuskeeper.DatabaseController;
-import com.focuskeeper.FocusKeeper;
-
 import static com.focuskeeper.DatabaseController.*;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestDBSetup {
 	
