@@ -33,6 +33,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 public class FocusKeeper extends Application {
+    private static FocusKeeper instance = null;
     Server server;
     Stage stage;
     static final Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -40,6 +41,15 @@ public class FocusKeeper extends Application {
     static FocusController focusController;
     long lastFocusChange = 0;
     static OS os = Util.getPlatform();
+    
+    public static FocusKeeper getInstance()
+    {
+        if (instance == null) {
+            instance = new FocusKeeper();
+        }
+
+        return instance;
+    }
     
     @Override
     public void init() throws Exception {
