@@ -24,7 +24,7 @@ public class TestDBNoReturns {
 	}
 	
 	@Test
-	public void testAddList() throws SQLException {
+	public void testAddList() {
 		DatabaseController.connect();
 		DatabaseController.createTable();
 		String check = "SELECT CASE WHEN"
@@ -32,9 +32,15 @@ public class TestDBNoReturns {
 				+ " THEN 'true' ELSE 'false' END AS test_result;";
 		String[] sites = {"A", "B", "C"};
 		DatabaseController.addList("Testy", sites);
+		
+		String result = new String();
+		try {
 		Statement state = DatabaseController.getCon().createStatement();
         ResultSet rs = state.executeQuery(check);
-        String result = rs.getString("test_result");
+        result = rs.getString("test_result");
+		} catch (Exception e) {
+			System.out.println("the sql messed up, yikes");
+		}
         DatabaseController.restartDB();
 		assertTrue(Boolean.parseBoolean(result));
 	}
