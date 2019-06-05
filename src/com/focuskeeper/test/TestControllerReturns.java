@@ -16,7 +16,7 @@ public class TestControllerReturns {
 	public void testGetAllBlockItems() {
 		FocusController a = new FocusController();	
 		Set<String> b = a.getAllBlockItems();
-		Set<String> c = new TreeSet<String>();
+		Set<String> c = new TreeSet<>();
 		assertEquals(c, b);
 	}
 	
@@ -25,7 +25,7 @@ public class TestControllerReturns {
 		FocusController a = new FocusController();
 		List<String> b = new ArrayList<String>();
 		Map<String, Boolean> c = a.checkDistracting(b);
-		Map<String, Boolean> d = new HashMap<String, Boolean>();
+		Map<String, Boolean> d = new HashMap<>();
 		assertEquals(c,d);
 	}
 }

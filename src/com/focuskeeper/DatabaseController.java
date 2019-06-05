@@ -28,17 +28,19 @@ public class DatabaseController {
     private static final String ELAPSED = "elapsedTime";
     public static final String DB_NAME = "FocusKeeper.db";
 
+    // Private constructor
+    private DatabaseController() {
+
+    }
+
     public static void connect() {        
         boolean dbExists = Paths.get(DB_NAME).toFile().exists();
 
         try {
             getConnection();
-        } catch (ClassNotFoundException e) {
-            FocusKeeper.logger.error(e.getMessage());
-        } catch (SQLException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             FocusKeeper.logger.error(e.getMessage());
         }
-
         if (!dbExists) {
             createTable();
         }
@@ -101,7 +103,7 @@ public class DatabaseController {
     }
 
     //restartDB()			 :  wipe and delete all database tables (cannot be undone)
-    public static void restartDB() {
+    public static void restartDB(){
     	Path path = Paths.get(DB_NAME);
 		try {
 			Files.delete(path);

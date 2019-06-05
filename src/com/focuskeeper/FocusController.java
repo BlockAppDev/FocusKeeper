@@ -120,7 +120,7 @@ class FocusSettings {
         FocusSettings settings = new FocusSettings();
         settings.blockLists = new HashMap<>();
         settings.schedule = new BlockSchedule();
-        settings.schedule.days = new HashMap<>();
+        settings.schedule.days = new EnumMap<>(Weekday.class);
 
         BlockList distracting = loadList(DISTRACTING, true,"lib/distracting_sites.txt");
         settings.blockLists.put(DISTRACTING, distracting);
@@ -201,7 +201,7 @@ class BlockList {
 }
 
 class BlockSchedule {
-    HashMap<Weekday, ArrayList<ScheduledBlock>> days;
+    EnumMap<Weekday, ArrayList<ScheduledBlock>> days;
 }
 
 class ScheduledBlock {

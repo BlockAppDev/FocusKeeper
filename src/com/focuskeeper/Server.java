@@ -39,7 +39,8 @@ public class Server {
         path("/data", () -> put("", this::data));
 
         path("/focused", () -> get("", (request, response) -> {
-        	return "";
+            FocusKeeper.focusController.settings.manualFocus = !FocusKeeper.focusController.settings.manualFocus;
+            return "";
         }));
 
         path("/stats", () -> get("", this::stats));
