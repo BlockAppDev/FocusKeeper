@@ -50,3 +50,30 @@ public class DataCollector {
         DatabaseController.addURLUsage(seconds, appName);
     }
 }
+
+class MacDaemon extends Daemon {
+
+}
+
+class WindowsDaemon extends Daemon {
+
+}
+
+class Daemon {
+
+}
+
+public class DaemonFactory {
+    public Daemon getDaemon() {
+        Daemon daemon = null;
+
+        if(FocusKeeper.os == OS.WINDOWS) {
+            daemon = new WindowsDaemon();
+        }
+        else {
+            daemon = new MacDaemon();
+        }
+
+        return daemon;
+    }
+}
