@@ -20,7 +20,7 @@ public class TestDBSetup {
 	}
 	
 	@Test
-	public void testCreateTable() throws SQLException {
+	public void testCreateTable() {
 		
 		String check = "SELECT CASE WHEN"
 				+ " EXISTS (SELECT name FROM sqlite_master WHERE type='table' "
@@ -30,9 +30,14 @@ public class TestDBSetup {
 		DatabaseController.connect();
 		DatabaseController.createTable();
 		
+		String result = new String();
+		try {
 		Statement state = DatabaseController.getCon().createStatement();
         ResultSet rs = state.executeQuery(check);
-        String result = rs.getString("test_result");
+        result = rs.getString("test_result");
+		} catch(Exception e) {
+			System.out.println("the sql messed up, yikes");
+		}
         
         DatabaseController.restartDB();
         
